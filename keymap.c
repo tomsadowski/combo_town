@@ -161,9 +161,9 @@ combo_t key_combos[] = {
   [ESC_COMBO_L] = COMBO(esc_combo_l, KC_ESC),          [ENT_COMBO_R] = COMBO(ent_combo_r, KC_ENT),
   [GUI_COMBO_L] = COMBO(gui_combo_l, KC_LGUI),         [GUI_COMBO_R] = COMBO(gui_combo_r, KC_RGUI),
   /*   |XXX|   |___|   |___|   |___|   |XXX|               |XXX|   |___|   |___|   |___|   |XXX|   */
-  [MBQ_COMBO_L] = COMBO(mbq_combo_l, MBQ),              [MBQ_COMBO_R] = COMBO(mbq_combo_r, MBQ),
+  [MBQ_COMBO_L] = COMBO(mbq_combo_l, MBQ),             [MBQ_COMBO_R] = COMBO(mbq_combo_r, MBQ),
   [QTE_COMBO_L] = COMBO(qte_combo_l, KC_QUOTE),        [SCL_COMBO_R] = COMBO(scl_combo_r, KC_SCLN),
-  [G32_COMBO_L] = COMBO(g31_combo_l, TO(G3D2_LAYER)),  [NMB_COMBO_R] = COMBO(nmb_combo_r, TO(NMBR_LAYER)),
+  [G32_COMBO_L] = COMBO(g32_combo_l, TO(G3D2_LAYER)),  [NMB_COMBO_R] = COMBO(nmb_combo_r, TO(NMBR_LAYER)),
 };
 
 // FUNCTION: COMBO

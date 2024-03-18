@@ -345,7 +345,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 mbq.queue[mbq.size] = keycode;
                 mbq.size += 1;
             }
-            // Register key
+            // Register queue
             if (mbq.terminal || mbq.size == MAX_MBQ) {
                 mbq.registered = true;
                 for (unsigned short i = 0; i < mbq.size; i++)

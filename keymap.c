@@ -26,6 +26,7 @@ static mod_builder_queue mbq = {false, false, false, 0, 0, {0}};
 enum td_keycodes {NMBR_CW};
 typedef enum {UNKNOWN, SINGLE_TAP, SINGLE_HLD, DOUBLE_TAP, TRIPLE_TAP} td_state_t;
 static td_state_t td_nmb_cw_state = UNKNOWN; // MO_NMB_LAYER when held, CAPSWORD when tapped
+static td_state_t last_tap_state = UNKNOWN;
 void td_nmb_cw_finished (tap_dance_state_t*, void*);
 void td_nmb_cw_reset (tap_dance_state_t*, void*);
 td_state_t td_get_state (tap_dance_state_t*);
@@ -209,12 +210,11 @@ bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode
 // Space does not break capsword
 bool caps_word_press_user(uint16_t keycode) {
     switch (keycode) {
-        // Only letters are affected by capsword.
         case KC_A ... KC_0:
             add_weak_mods(MOD_BIT(KC_LSFT));
             return true;
         case KC_MINUS ... KC_SLASH:
-            if (td_nmb_cw_state == TRIPLE_TAP)
+            if (last_tap_state == TRIPLE_TAP)
                 add_weak_mods(MOD_BIT(KC_LSFT));
             return true;
         // Escape and modifiers break capsword
@@ -244,14 +244,20 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 // Return tapdance state as an enum value
 td_state_t td_get_state(tap_dance_state_t *state) {
     if (state->count == 1) {
-        if (!state->pressed)
+        if (!state->pressed) {
+            last_tap_state = SINGLE_TAP;
             return SINGLE_TAP;
+        }
         return SINGLE_HLD;
     }
-    if (state->count == 2)
+    if (state->count == 2) {
+        last_tap_state = DOUBLE_TAP;
         return DOUBLE_TAP;
-    if (state->count == 3)
+    }
+    if (state->count == 3) {
+        last_tap_state = TRIPLE_TAP;
         return TRIPLE_TAP;
+    }
     return UNKNOWN;
 }
 // Sets keyboard state from MO_NMBR_LAYER/CAPSWORD tapdance state

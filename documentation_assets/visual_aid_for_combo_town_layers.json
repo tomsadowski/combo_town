@@ -25,9 +25,9 @@
                                         "KC_BSPC", "KC_SPC",      "KC_BTN1", "KC_BTN2"
     ],
     [
-        "KC_X",    "KC_C",    "KC_H",    "KC_B",    "KC_Q",       "KC_Z",    "KC_Y",    "KC_MS_U", "KC_P",    "KC_J",
-        "KC_A",    "KC_S",    "KC_R",    "KC_T",    "KC_COMM",    "KC_DOT",  "KC_MS_L", "KC_MS_D", "KC_O",    "KC_MS_R",
-        "KC_V",    "KC_F",    "KC_L",    "KC_D",    "KC_MINS",    "KC_EQL",  "KC_U",    "KC_WH_D", "KC_WH_U", "KC_K",
+        "KC_X",    "KC_C",    "KC_H",    "KC_B",    "KC_Q",       "KC_Z",    "KC_WH_D", "KC_MS_U", "KC_WH_U", "KC_J",
+        "KC_A",    "KC_S",    "KC_R",    "KC_T",    "KC_COMM",    "KC_DOT",  "KC_MS_L", "KC_MS_D", "KC_MS_R", "KC_N",
+        "KC_V",    "KC_F",    "KC_L",    "KC_D",    "KC_MINS",    "KC_EQL",  "KC_U",    "KC_M",    "KC_G",    "KC_K",
                                          "KC_BSPC", "KC_SPC",     "KC_BTN1", "KC_BTN2"
     ],
     [

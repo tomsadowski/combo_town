@@ -171,7 +171,9 @@ combo_t key_combos[] = {
 // Can only switch to game modes from momentary number layer
 bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode, keyrecord_t *record) {
     switch (combo_index) {
-        case G2D_COMBO_L ... G32_COMBO_L:
+        case G2D_COMBO_L:
+        case G31_COMBO_L:
+        case G32_COMBO_L:
             if (layer_state_is(MO_NMB_LYR)) return true;
             else return false;
         default: return true;

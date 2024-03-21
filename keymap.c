@@ -1,6 +1,7 @@
 // tomsadowski
 // keymap for ferris sweep
 
+#include "process_combo.h"
 #include QMK_KEYBOARD_H
 #include <stdint.h>
 #include "action.h"
@@ -24,9 +25,8 @@ static mod_builder_queue mbq = {false, false, false, 0, 0, {0}};
 // DATA: TAPDANCE
 
 enum td_keycodes {NMBR_CW};
-typedef enum {UNKNOWN, SINGLE_TAP, SINGLE_HLD, DOUBLE_TAP, TRIPLE_TAP} td_state_t;
+typedef enum {UNKNOWN, SINGLE_TAP, SINGLE_HLD, DOUBLE_TAP} td_state_t;
 static td_state_t td_nmb_cw_state = UNKNOWN; // MO_NMB_LAYER when held, CAPSWORD when tapped
-static td_state_t last_tap_state = UNKNOWN;
 void td_nmb_cw_finished (tap_dance_state_t*, void*);
 void td_nmb_cw_reset (tap_dance_state_t*, void*);
 td_state_t td_get_state (tap_dance_state_t*);
@@ -40,55 +40,55 @@ enum layers {ALPHA_LAYER, GM2D_LAYER, G3D1_LAYER, G3D2_LAYER, NMBR_LAYER, MOUS_L
              MO_ALP_LYR, MO_MAL_LYR, MO_NMB_LYR, MO_MSE_LYR};
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [ALPHA_LAYER] = LAYOUT_split_3x5_2( // ALPHA: Alphabet, punctuation, editing
-        KC_X,    KC_C,    KC_H,    KC_B,    KC_Q,        KC_Z,    KC_Y,    KC_W,    KC_P,    KC_J,
-        KC_A,    KC_S,    KC_R,    KC_T,    KC_COMMA,    KC_DOT,  KC_E,    KC_I,    KC_O,    KC_N,
-        KC_V,    KC_F,    KC_L,    KC_D,    KC_MINS,     KC_EQL,  KC_U,    KC_M,    KC_G,    KC_K,
-                 KC_BSPC, LT(MO_MSE_LYR, KC_SPC),        TD(NMBR_CW), KC_DEL),
-    [GM2D_LAYER] = LAYOUT_split_3x5_2( // GAME 2D: Base sans hold-tap features
-        _______, _______, _______, _______, _______,     _______, _______, _______, _______, _______,
-        _______, _______, _______, _______, _______,     _______, _______, _______, _______, _______,
-        _______, KC_ESC,  KC_ENT,  _______, CM_OFF,      CM_ON,   _______, _______, _______, _______,
-                                   _______, KC_SPC,      KC_0,    _______),
+        KC_X,    KC_C,    KC_H,    KC_B,    KC_Q,            KC_Z,    KC_Y,    KC_W,    KC_P,    KC_J,
+        KC_A,    KC_S,    KC_R,    KC_T,    KC_COMMA,        KC_DOT,  KC_E,    KC_I,    KC_O,    KC_N,
+        KC_V,    KC_F,    KC_L,    KC_D,    KC_MINS,         KC_EQL,  KC_U,    KC_M,    KC_G,    KC_K,
+                 KC_BSPC, LT(MO_MSE_LYR, KC_SPC),            TD(NMBR_CW), KC_DEL),
+    [GM2D_LAYER] = LAYOUT_split_3x5_2( // GAME 2D: Base sans combos and hold-tap features
+        _______, _______, _______, _______, KC_ESC,          KC_ENT,  _______, _______, _______, _______,
+        _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
+        _______, _______, _______, _______, TO(ALPHA_LAYER), _______, _______, _______, _______, _______,
+                                   _______, KC_SPC,          KC_0,    _______),
     [G3D1_LAYER] = LAYOUT_split_3x5_2( // GAME 3D: Game 2d but with mouse
-        _______, _______, _______, _______, _______,     _______, _______, _______, _______, _______,
-        _______, _______, _______, _______, _______,     _______, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R,
-        _______, KC_ESC, KC_ENT, _______,   CM_OFF,      CM_ON,  _______, KC_WH_D, KC_WH_U, _______,
-                                   _______, KC_SPC,      KC_BTN1, KC_BTN2),
+        _______, _______, _______, _______, KC_ESC,          KC_ENT,  _______, _______, _______, _______,
+        _______, _______, _______, _______, _______,         _______, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R,
+        _______, _______, _______, _______, TO(ALPHA_LAYER), _______, _______, KC_WH_D, KC_WH_U, _______,
+                                   _______, KC_SPC,          KC_BTN1, KC_BTN2),
     [G3D2_LAYER] = LAYOUT_split_3x5_2( // GAME 3D: Game 2d but with an augmented mouse layout
-        _______, _______, _______, _______, _______,     _______, KC_WH_D, KC_MS_U, KC_WH_U, _______,
-        _______, _______, _______, _______, _______,     _______, KC_MS_L, KC_MS_D, KC_MS_R, _______,
-        _______, KC_ESC,  KC_ESC,  _______, CM_OFF,      CM_ON,   _______, _______, _______, _______,
-                                   _______, KC_SPC,      KC_BTN1, KC_BTN2),
+        _______, _______, _______, _______, KC_ESC,          KC_ENT,  KC_WH_D, KC_MS_U, KC_WH_U, _______,
+        _______, _______, _______, _______, _______,         _______, KC_MS_L, KC_MS_D, KC_MS_R, _______,
+        _______, _______, _______, _______, TO(ALPHA_LAYER), _______, _______, _______, _______, _______,
+                                   _______, KC_SPC,          KC_BTN1, KC_BTN2),
     [NMBR_LAYER] = LAYOUT_split_3x5_2( // NUMBER: digits, navigation keys, and symbols
-        KC_1,    KC_2,    KC_3,    KC_4,    KC_5,        KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
-        KC_LBRC, KC_RBRC, KC_BSLS, KC_SLSH, _______,     _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
-        _______, KC_ESC,  KC_ENT,  KC_GRV,  _______,     _______,   KC_HOME, KC_PGDN, KC_PGUP, KC_END,
-                                   _______, _______,     MO(MO_ALP_LYR), _______),
+        KC_1,    KC_2,    KC_3,    KC_4,    KC_5,            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
+        KC_LBRC, KC_RBRC, KC_BSLS, KC_SLSH, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
+        _______, _______, _______, KC_GRV,  _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
+                                   _______, _______,         MO(MO_ALP_LYR), _______),
     [MOUS_LAYER] = LAYOUT_split_3x5_2( // MOUSE: Mouse and function keys
-        KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,       KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,
-        KC_F11,  KC_F12,  KC_ACL1, KC_ACL0, KC_QUOT,     KC_SCLN, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R,
-        _______, KC_ENT,  KC_ESC,  KC_ACL2, _______,     _______, KC_WH_L, KC_WH_D, KC_WH_U, KC_WH_R,
-                 _______, LT(MO_MAL_LYR, KC_SPC),        KC_BTN1, KC_BTN2),
+        KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,           KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,
+        KC_F11,  KC_F12,  KC_ACL1, KC_ACL0, _______,         _______, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R,
+        _______, _______, _______, KC_ACL2, _______,         _______, KC_WH_L, KC_WH_D, KC_WH_U, KC_WH_R,
+                 _______, LT(MO_MAL_LYR, KC_SPC),            KC_BTN1, KC_BTN2),
     [MO_ALP_LYR] = LAYOUT_split_3x5_2( // MOMENTARY ALPHA: Accessed from NUMBER
-        KC_X,   KC_C,     KC_H,    KC_B,    KC_Q,        KC_Z,    KC_Y,    KC_W,    KC_P,    KC_J,
-        KC_A,   KC_S,     KC_R,    KC_T,    _______,     _______, KC_E,    KC_I,    KC_O,    KC_N,
-        KC_V,   KC_F,     KC_L,    KC_D,    CM_OFF,      CM_ON,   KC_U,    KC_M,    KC_G,    KC_K,
-                                   _______, KC_SPC,      _______, _______),
+        KC_X,   KC_C,     KC_H,    KC_B,    KC_Q,            KC_Z,    KC_Y,    KC_W,    KC_P,    KC_J,
+        KC_A,   KC_S,     KC_R,    KC_T,    _______,         _______, KC_E,    KC_I,    KC_O,    KC_N,
+        KC_V,   KC_F,     KC_L,    KC_D,    _______,         _______, KC_U,    KC_M,    KC_G,    KC_K,
+                                   _______, KC_SPC,          _______, _______),
     [MO_MAL_LYR] = LAYOUT_split_3x5_2( // MOMENTARY MOUSE ALPHA: accessed from MOUSE
-        KC_X,   KC_C,     KC_H,    KC_B,    KC_Q,        KC_Z,    KC_Y,    KC_W,    KC_P,     KC_J,
-        KC_A,   KC_S,     KC_R,    KC_T,    _______,     _______, KC_E,    KC_I,    KC_O,     KC_N,
-        KC_V,   KC_F,     KC_L,    KC_D,    CM_OFF,      CM_ON,   KC_U,    KC_M,    KC_G,     KC_K,
-                                   _______, _______,     TD(NMBR_CW), KC_DEL),
+        KC_X,   KC_C,     KC_H,    KC_B,    KC_Q,            KC_Z,    KC_Y,    KC_W,    KC_P,     KC_J,
+        KC_A,   KC_S,     KC_R,    KC_T,    _______,         _______, KC_E,    KC_I,    KC_O,     KC_N,
+        KC_V,   KC_F,     KC_L,    KC_D,    _______,         _______, KC_U,    KC_M,    KC_G,     KC_K,
+                                   _______, _______,         TD(NMBR_CW), KC_DEL),
     [MO_NMB_LYR] = LAYOUT_split_3x5_2( // MOMENTARY NUMBER: accessed from ALPHA and MOMENTARY MOUSE ALPHA
-        KC_1,    KC_2,    KC_3,    KC_4,    KC_5,        KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
-        KC_LBRC, KC_RBRC, KC_BSLS, KC_SLSH, _______,     _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
-        _______, KC_ENT,  KC_ENT,  KC_GRV,  CM_OFF,      CM_ON,   KC_HOME, KC_PGDN, KC_PGUP, KC_END,
-                                   _______, KC_SPC,      _______, _______),
+        KC_1,    KC_2,    KC_3,    KC_4,    KC_5,            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
+        KC_LBRC, KC_RBRC, KC_BSLS, KC_SLSH, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
+        _______, _______, _______, KC_GRV,  _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
+                                   _______, KC_SPC,          _______, _______),
     [MO_MSE_LYR] = LAYOUT_split_3x5_2( // MOMENTARY MOUSE: accessed from ALPHA
-        KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,       KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,
-        KC_F11,  KC_F12,  KC_ACL1, KC_ACL0, KC_QUOT,     KC_SCLN, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R,
-        _______, KC_ESC,  KC_ENT,  KC_ACL2, CM_OFF,      CM_ON,   KC_WH_L, KC_WH_D, KC_WH_U, KC_WH_R,
-                                   _______, _______,     KC_BTN1, KC_BTN2),
+        KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,           KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,
+        KC_F11,  KC_F12,  KC_ACL1, KC_ACL0, _______,         _______, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R,
+        _______, _______, _______, KC_ACL2, _______,         _______, KC_WH_L, KC_WH_D, KC_WH_U, KC_WH_R,
+                                   _______, _______,         KC_BTN1, KC_BTN2),
 };
 
 // DATA: COMBO NAMES
@@ -168,42 +168,29 @@ combo_t key_combos[] = {
 };
 
 // FUNCTION: COMBO
-// Permit a subset of combos while in game layers
+// Can only switch to game modes from momentary number layer
 bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode, keyrecord_t *record) {
-    if (layer_state_is(GM2D_LAYER)) {
-        if (combo_index != ESC_COMBO_L &&
-            combo_index != G31_COMBO_L &&
-            combo_index != G32_COMBO_L &&
-            combo_index != MSE_COMBO_R &&
-            combo_index != NMB_COMBO_R &&
-            combo_index != ALP_COMBO_R &&
-            combo_index != TAB_COMBO_R &&
-            combo_index != ENT_COMBO_R)
-            return false;
+    switch (combo_index) {
+        case G2D_COMBO_L ... G32_COMBO_L:
+            if (layer_state_is(MO_NMB_LYR)) return true;
+            else return false;
+        default: return true;
     }
-    else if (layer_state_is(G3D1_LAYER)) {
-        if (combo_index != ESC_COMBO_L &&
-            combo_index != G2D_COMBO_L &&
-            combo_index != G32_COMBO_L &&
-            combo_index != SFT_COMBO_R &&
-            combo_index != CTL_COMBO_R &&
-            combo_index != MSE_COMBO_R &&
-            combo_index != NMB_COMBO_R &&
-            combo_index != ALP_COMBO_R &&
-            combo_index != ENT_COMBO_R)
-            return false;
+}
+// FUNCTION: LAYER
+// Switching to MOUS_LAYER or NMBR_LAYER breaks capsword
+layer_state_t layer_state_set_user(layer_state_t state) {
+    switch (get_highest_layer(state)) {
+        case ALPHA_LAYER:
+            if (!is_combo_enabled()) combo_enable(); break;
+        case GM2D_LAYER ... G3D2_LAYER:
+            if (is_combo_enabled()) combo_disable();
+            if (is_caps_word_on()) caps_word_off(); break;
+        case NMBR_LAYER ... MOUS_LAYER:
+            if (is_caps_word_on()) caps_word_off(); break;
+        default: break;
     }
-    else if (layer_state_is(G3D2_LAYER)) {
-        if (combo_index != ESC_COMBO_L &&
-            combo_index != G2D_COMBO_L &&
-            combo_index != G31_COMBO_L &&
-            combo_index != MSE_COMBO_R &&
-            combo_index != NMB_COMBO_R &&
-            combo_index != ALP_COMBO_R &&
-            combo_index != ENT_COMBO_R)
-            return false;
-    }
-    return true;
+  return state;
 }
 
 // FUNCTION: CAPSWORD
@@ -212,10 +199,6 @@ bool caps_word_press_user(uint16_t keycode) {
     switch (keycode) {
         case KC_A ... KC_0:
             add_weak_mods(MOD_BIT(KC_LSFT));
-            return true;
-        case KC_MINUS ... KC_SLASH:
-            if (last_tap_state == TRIPLE_TAP)
-                add_weak_mods(MOD_BIT(KC_LSFT));
             return true;
         // Escape and modifiers break capsword
         case KC_ESC:
@@ -229,47 +212,22 @@ bool caps_word_press_user(uint16_t keycode) {
         default: return true;
     }
 }
-// Switching to MOUS_LAYER or NMBR_LAYER breaks capsword
-layer_state_t layer_state_set_user(layer_state_t state) {
-    switch (get_highest_layer(state)) {
-    case G2D_COMBO_L ... MOUS_LAYER:
-        if (is_caps_word_on()) caps_word_off(); break;
-    default:
-        break;
-    }
-  return state;
-}
 
 // FUNCTION: TAPDANCE
 // Return tapdance state as an enum value
 td_state_t td_get_state(tap_dance_state_t *state) {
-    if (state->count == 1) {
-        if (!state->pressed) {
-            last_tap_state = SINGLE_TAP;
-            return SINGLE_TAP;
-        }
-        return SINGLE_HLD;
-    }
-    if (state->count == 2) {
-        last_tap_state = DOUBLE_TAP;
-        return DOUBLE_TAP;
-    }
-    if (state->count == 3) {
-        last_tap_state = TRIPLE_TAP;
-        return TRIPLE_TAP;
-    }
+    if (state->count == 1 && state->pressed)  return SINGLE_HLD;
+    if (state->count == 1 && !state->pressed) return SINGLE_TAP;
+    if (state->count == 2) return DOUBLE_TAP;
     return UNKNOWN;
 }
 // Sets keyboard state from MO_NMBR_LAYER/CAPSWORD tapdance state
 void td_nmb_cw_finished(tap_dance_state_t *state, void *user_data) {
     td_nmb_cw_state = td_get_state(state);
     switch (td_nmb_cw_state) {
-        case SINGLE_TAP:
-            if (is_caps_word_on()) caps_word_off(); break;
-        case SINGLE_HLD:
-            layer_on(MO_NMB_LYR); break;
-        case DOUBLE_TAP ... TRIPLE_TAP:
-            if (!is_caps_word_on()) caps_word_on(); break;
+        case SINGLE_TAP: if (is_caps_word_on()) caps_word_off(); break;
+        case SINGLE_HLD: layer_on(MO_NMB_LYR); break;
+        case DOUBLE_TAP: if (!is_caps_word_on()) caps_word_on(); break;
         default: break;
     }
 }
@@ -277,9 +235,8 @@ void td_nmb_cw_finished(tap_dance_state_t *state, void *user_data) {
 void td_nmb_cw_reset(tap_dance_state_t *state, void *user_data) {
     switch (td_nmb_cw_state) {
         case SINGLE_TAP: break;
-        case SINGLE_HLD:
-            layer_off(MO_NMB_LYR); break;
-        case DOUBLE_TAP ... TRIPLE_TAP: break;
+        case SINGLE_HLD: layer_off(MO_NMB_LYR); break;
+        case DOUBLE_TAP: break;
         default: break;
     }
 }
@@ -291,8 +248,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case MBQ:
             // Ignore this key when registered
             if (mbq.registered) return false;
-
-            // DEDUCTION: Queue not registered
 
             // Open the queue when pressed
             if (record->event.pressed) {
@@ -314,9 +269,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case KC_A ... KC_RGUI:
             // Process key normally when queue not active
             if (!mbq.active) return true;
-
-            // DEDUCTION: Queue is active
-
             // Process key normally when key pressed and queue registered
             if (mbq.registered && record->event.pressed) return true;
             // Do nothing when queue not registered and key released
@@ -328,8 +280,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             if (mbq.registered) {
                 for (unsigned short i = 0; i < mbq.size; i++)
                     unregister_code(mbq.queue[i]);
-                mbq.active = false;
-                mbq.registered = false;
+                mbq.active = mbq.registered = false;
                 mbq.size = mbq.last_size = 0;
                 memset(mbq.queue, 0, sizeof(mbq.queue));
                 return true;

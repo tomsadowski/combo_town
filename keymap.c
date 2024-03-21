@@ -194,7 +194,7 @@ uint16_t get_combo_term(uint16_t index, combo_t *combo) {
     if (layer_state_is(GM2D_LAYER) ||
         layer_state_is(G3D1_LAYER) ||
         layer_state_is(G3D2_LAYER))
-        return 8;
+        return 6;
     return COMBO_TERM;
 }
 

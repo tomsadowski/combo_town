@@ -1,6 +1,7 @@
 // tomsadowski
 // keymap for ferris sweep
 
+#include "action_layer.h"
 #include "process_combo.h"
 #include QMK_KEYBOARD_H
 #include <stdint.h>
@@ -45,19 +46,19 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_V,    KC_F,    KC_L,    KC_D,    KC_MINS,         KC_EQL,  KC_U,    KC_M,    KC_G,    KC_K,
                  KC_BSPC, LT(MO_MSE_LYR, KC_SPC),            TD(NMBR_CW), KC_DEL),
     [GM2D_LAYER] = LAYOUT_split_3x5_2( // GAME 2D: Base sans combos and hold-tap features
-        _______, _______, _______, _______, KC_ESC,          KC_ENT,  _______, _______, _______, _______,
+        _______, _______, _______, _______, _______,         _______,  _______, _______, _______, _______,
         _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
-        _______, _______, _______, _______, TO(ALPHA_LAYER), _______, _______, _______, _______, _______,
+        _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
                                    _______, KC_SPC,          KC_0,    _______),
     [G3D1_LAYER] = LAYOUT_split_3x5_2( // GAME 3D: Game 2d but with mouse
-        _______, _______, _______, _______, KC_ESC,          KC_ENT,  _______, _______, _______, _______,
+        _______, _______, _______, _______, _______,         _______,  _______, _______, _______, _______,
         _______, _______, _______, _______, _______,         _______, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R,
-        _______, _______, _______, _______, TO(ALPHA_LAYER), _______, _______, KC_WH_D, KC_WH_U, _______,
+        _______, _______, _______, _______, _______,         _______, _______, KC_WH_D, KC_WH_U, _______,
                                    _______, KC_SPC,          KC_BTN1, KC_BTN2),
     [G3D2_LAYER] = LAYOUT_split_3x5_2( // GAME 3D: Game 2d but with an augmented mouse layout
-        _______, _______, _______, _______, KC_ESC,          KC_ENT,  KC_WH_D, KC_MS_U, KC_WH_U, _______,
+        _______, _______, _______, _______, _______,         _______,  KC_WH_D, KC_MS_U, KC_WH_U, _______,
         _______, _______, _______, _______, _______,         _______, KC_MS_L, KC_MS_D, KC_MS_R, _______,
-        _______, _______, _______, _______, TO(ALPHA_LAYER), _______, _______, _______, _______, _______,
+        _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
                                    _______, KC_SPC,          KC_BTN1, KC_BTN2),
     [NMBR_LAYER] = LAYOUT_split_3x5_2( // NUMBER: digits, navigation keys, and symbols
         KC_1,    KC_2,    KC_3,    KC_4,    KC_5,            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
@@ -170,25 +171,39 @@ combo_t key_combos[] = {
 // FUNCTION: COMBO
 // Can only switch to game modes from momentary number layer
 bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode, keyrecord_t *record) {
-    switch (combo_index) {
-        case G2D_COMBO_L:
-        case G31_COMBO_L:
-        case G32_COMBO_L:
-            if (layer_state_is(MO_NMB_LYR)) return true;
-            else return false;
-        default: return true;
+    if (layer_state_is(GM2D_LAYER) ||
+        layer_state_is(G3D1_LAYER) ||
+        layer_state_is(G3D2_LAYER)) {
+        switch (combo_index) {
+            case ESC_COMBO_L:
+            case ENT_COMBO_R:
+            case G2D_COMBO_L:
+            case G31_COMBO_L:
+            case G32_COMBO_L:
+            case ALP_COMBO_R:
+            case MSE_COMBO_R:
+            case NMB_COMBO_R:
+                return true;
+            default: return false;
+        }
     }
+    return true;
 }
+// Shorten combo term when in game layers
+uint16_t get_combo_term(uint16_t index, combo_t *combo) {
+    if (layer_state_is(GM2D_LAYER) ||
+        layer_state_is(G3D1_LAYER) ||
+        layer_state_is(G3D2_LAYER))
+        return 8;
+    return COMBO_TERM;
+}
+
+
 // FUNCTION: LAYER
 // Switching to MOUS_LAYER or NMBR_LAYER breaks capsword
 layer_state_t layer_state_set_user(layer_state_t state) {
     switch (get_highest_layer(state)) {
-        case ALPHA_LAYER:
-            if (!is_combo_enabled()) combo_enable(); break;
-        case GM2D_LAYER ... G3D2_LAYER:
-            if (is_combo_enabled()) combo_disable();
-            if (is_caps_word_on()) caps_word_off(); break;
-        case NMBR_LAYER ... MOUS_LAYER:
+        case GM2D_LAYER ... MOUS_LAYER:
             if (is_caps_word_on()) caps_word_off(); break;
         default: break;
     }
@@ -199,7 +214,7 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 // Space does not break capsword
 bool caps_word_press_user(uint16_t keycode) {
     switch (keycode) {
-        case KC_A ... KC_0:
+        case KC_A ... KC_Z:
             add_weak_mods(MOD_BIT(KC_LSFT));
             return true;
         // Escape and modifiers break capsword

@@ -46,17 +46,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_V,    KC_F,    KC_L,    KC_D,    KC_MINS,         KC_EQL,  KC_U,    KC_M,    KC_G,    KC_K,
                  KC_BSPC, LT(MO_MSE_LYR, KC_SPC),            TD(NMBR_CW), KC_DEL),
     [GM2D_LAYER] = LAYOUT_split_3x5_2( // GAME 2D: Base sans combos and hold-tap features
-        _______, _______, _______, _______, _______,         _______,  _______, _______, _______, _______,
+        _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
         _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
         _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
                                    _______, KC_SPC,          KC_0,    _______),
     [G3D1_LAYER] = LAYOUT_split_3x5_2( // GAME 3D: Game 2d but with mouse
-        _______, _______, _______, _______, _______,         _______,  _______, _______, _______, _______,
+        _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
         _______, _______, _______, _______, _______,         _______, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R,
         _______, _______, _______, _______, _______,         _______, _______, KC_WH_D, KC_WH_U, _______,
                                    _______, KC_SPC,          KC_BTN1, KC_BTN2),
     [G3D2_LAYER] = LAYOUT_split_3x5_2( // GAME 3D: Game 2d but with an augmented mouse layout
-        _______, _______, _______, _______, _______,         _______,  KC_WH_D, KC_MS_U, KC_WH_U, _______,
+        _______, _______, _______, _______, _______,         _______, KC_WH_D, KC_MS_U, KC_WH_U, _______,
         _______, _______, _______, _______, _______,         _______, KC_MS_L, KC_MS_D, KC_MS_R, _______,
         _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
                                    _______, KC_SPC,          KC_BTN1, KC_BTN2),
@@ -169,7 +169,7 @@ combo_t key_combos[] = {
 };
 
 // FUNCTION: COMBO
-// Can only switch to game modes from momentary number layer
+// Exclude some combos from game layers
 bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode, keyrecord_t *record) {
     if (layer_state_is(GM2D_LAYER) ||
         layer_state_is(G3D1_LAYER) ||

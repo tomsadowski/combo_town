@@ -4,46 +4,27 @@
 #include "action_layer.h"
 #include "process_combo.h"
 #include QMK_KEYBOARD_H
-#include <stdint.h>
 #include "action.h"
 #include "keycodes.h"
 #include "quantum_keycodes.h"
 
-#define MAX_MBQ 6
-
-enum my_keycodes {MBQ = SAFE_RANGE, CAPS_ON, CAPS_OFF};
-
-// DATA: MOD-BUILDER
-
-typedef struct   {bool registered;
-                  bool terminal;
-                  bool active;
-                  unsigned short last_size;
-                  unsigned short size;
-                  uint16_t queue[MAX_MBQ];
-                 } mod_builder_queue;
-static mod_builder_queue mbq = {false, false, false, 0, 0, {0}};
+enum my_keycodes {CAPS_ON = SAFE_RANGE, CAPS_OFF};
 
 // DATA: LAYERS
 
-enum layers {ALPHA_LAYER, GM2D_LAYER, G2D2_LAYER, GM3D_LAYER, NMBR_LAYER, MOUS_LAYER,
+enum layers {ALPHA_LAYER, GM2D_LAYER, GM3D_LAYER, NMBR_LAYER, MOUS_LAYER,
              MO_ALP_LYR, MO_MAL_LYR, MO_MNM_LYR, MO_NMB_LYR, MO_MSE_LYR};
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [ALPHA_LAYER] = LAYOUT_split_3x5_2( // ALPHA: Alphabet, punctuation, editing
         KC_X,    KC_C,    KC_H,    KC_B,    KC_Q,            KC_Z,    KC_Y,    KC_W,    KC_P,    KC_J,
         KC_A,    KC_S,    KC_R,    KC_T,    KC_COMMA,        KC_DOT,  KC_E,    KC_I,    KC_O,    KC_N,
         KC_V,    KC_F,    KC_L,    KC_D,    KC_MINS,         KC_EQL,  KC_U,    KC_M,    KC_G,    KC_K,
-                 KC_BSPC, LT(MO_MSE_LYR, KC_SPC),            MO(MO_NMB_LYR), KC_DEL),
+                 KC_BSPC, LT(MO_MSE_LYR, KC_SPC),            LT(MO_NMB_LYR, KC_SPC), KC_DEL),
     [GM2D_LAYER] = LAYOUT_split_3x5_2( // GAME 2D: Base sans combos and hold-tap features
         _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
         _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
         _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
                                    _______, KC_SPC,          KC_0,    _______),
-    [G2D2_LAYER] = LAYOUT_split_3x5_2( // GAME 2D 2: Tries to work with games that dont allow custom bindings
-        _______, _______, _______, _______, _______,         _______, _______, KC_R,    _______, _______,
-        KC_A,    KC_W,    KC_S,    KC_D,    _______,         _______, _______, _______, _______, _______,
-        KC_LEFT, KC_UP,   KC_DOWN, KC_RGHT, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT,
-                                   _______, KC_SPC,          KC_BTN1, KC_BTN2),
     [GM3D_LAYER] = LAYOUT_split_3x5_2( // GAME 3D: Game 2d but with mouse
         _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
         _______, _______, _______, _______, _______,         _______, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R,
@@ -53,7 +34,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_1,    KC_2,    KC_3,    KC_4,    KC_5,            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
         KC_LBRC, KC_RBRC, KC_BSLS, KC_SLSH, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
         _______, _______, _______, KC_GRV,  _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
-                                   _______, _______,         MO(MO_ALP_LYR), _______),
+                                   _______, _______,         LT(MO_ALP_LYR, KC_SPC), _______),
     [MOUS_LAYER] = LAYOUT_split_3x5_2( // MOUSE: Mouse and function keys
         KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,           KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,
         KC_F11,  KC_F12,  KC_ACL1, KC_ACL0, _______,         _______, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R,
@@ -68,7 +49,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_X,   KC_C,     KC_H,    KC_B,    KC_Q,            KC_Z,    KC_Y,    KC_W,    KC_P,     KC_J,
         KC_A,   KC_S,     KC_R,    KC_T,    _______,         _______, KC_E,    KC_I,    KC_O,     KC_N,
         KC_V,   KC_F,     KC_L,    KC_D,    _______,         _______, KC_U,    KC_M,    KC_G,     KC_K,
-                                   _______, _______,         MO(MO_MNM_LYR), KC_DEL),
+                                   _______, _______,         LT(MO_MNM_LYR, KC_SPC), KC_DEL),
     [MO_MNM_LYR] = LAYOUT_split_3x5_2( // MOMENTARY NUMBER: accessed from MOMENTARY MOUSE ALPHA
         KC_1,    KC_2,    KC_3,    KC_4,    KC_5,            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
         KC_LBRC, KC_RBRC, KC_BSLS, KC_SLSH, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
@@ -96,18 +77,15 @@ enum combos {
   /*   |XXX|   |___|   |___|   |XXX|   |___|      |___|   |XXX|   |___|   |___|   |XXX|   */
                     ALT_COMBO_L,                               ALT_COMBO_R,
                     CTL_COMBO_L,                               CTL_COMBO_R,
-                    G22_COMBO_L,                               MSE_COMBO_R,
+                    G3D_COMBO_L,                               MSE_COMBO_R,
   /*   |___|   |___|   |___|   |XXX|   |XXX|      |XXX|   |XXX|   |___|   |___|   |___|   */
-                    PSC_COMBO_L,                               PSC_COMBO_R,
+                    CON_COMBO_L,                               COF_COMBO_R,
                     ESC_COMBO_L,                               ENT_COMBO_R,
                     GUI_COMBO_L,                               GUI_COMBO_R,
   /*   |XXX|   |___|   |___|   |___|   |XXX|      |XXX|   |___|   |___|   |___|   |XXX|   */
-                    MBQ_COMBO_L,                               MBQ_COMBO_R,
+                    PSC_COMBO_L,                               PSC_COMBO_R,
                     QTE_COMBO_L,                               SCL_COMBO_R,
-  /*   |___|   |___|   |111|   |111|   |___|               |___|   |111|   |111|   |___|   |___|   */
-                    CON_COMBO_L,                               COF_COMBO_R,
-  /*   |111|   |111|   |___|   |___|   |___|               |___|   |___|   |___|   |111|   |111|   */
-                    G3D_COMBO_L,                               NMB_COMBO_R,
+                                                               NMB_COMBO_R,
 };
 
 // DATA: COMBO KEYS
@@ -118,13 +96,13 @@ const uint16_t PROGMEM g2d_combo_l[] = {KC_F,   KC_L,     COMBO_END};
 //                                          L:  X  -  -  X  -
 const uint16_t PROGMEM alt_combo_l[] = {KC_X,   KC_B,     COMBO_END};
 const uint16_t PROGMEM ctl_combo_l[] = {KC_A,   KC_T,     COMBO_END};
-const uint16_t PROGMEM g22_combo_l[] = {KC_V,   KC_D,     COMBO_END};
+const uint16_t PROGMEM g3d_combo_l[] = {KC_V,   KC_D,     COMBO_END};
 //                                          L:  -  -  -  X  X
-const uint16_t PROGMEM psc_combo_l[] = {KC_B,   KC_Q,     COMBO_END};
+const uint16_t PROGMEM con_combo_l[] = {KC_B,   KC_Q,     COMBO_END};
 const uint16_t PROGMEM esc_combo_l[] = {KC_T,   KC_COMMA, COMBO_END};
 const uint16_t PROGMEM gui_combo_l[] = {KC_D,   KC_MINS,  COMBO_END};
 //                                          L:  X  -  -  -  X
-const uint16_t PROGMEM mbq_combo_l[] = {KC_X,   KC_Q,     COMBO_END};
+const uint16_t PROGMEM psc_combo_l[] = {KC_X,   KC_Q,     COMBO_END};
 const uint16_t PROGMEM qte_combo_l[] = {KC_A,   KC_COMMA, COMBO_END};
 //                                          R:  -  -  X  X  -
 const uint16_t PROGMEM tab_combo_r[] = {KC_W,   KC_P,     COMBO_END};
@@ -135,20 +113,13 @@ const uint16_t PROGMEM alt_combo_r[] = {KC_Y,   KC_J,     COMBO_END};
 const uint16_t PROGMEM ctl_combo_r[] = {KC_E,   KC_N,     COMBO_END};
 const uint16_t PROGMEM mse_combo_r[] = {KC_U,   KC_K,     COMBO_END};
 //                                          R:  X  X  -  -  -
-const uint16_t PROGMEM psc_combo_r[] = {KC_Z,   KC_Y,     COMBO_END};
+const uint16_t PROGMEM cof_combo_r[] = {KC_Z,   KC_Y,     COMBO_END};
 const uint16_t PROGMEM ent_combo_r[] = {KC_DOT, KC_E,     COMBO_END};
 const uint16_t PROGMEM gui_combo_r[] = {KC_EQL, KC_U,     COMBO_END};
 //                                          R:  X  -  -  -  X
-const uint16_t PROGMEM mbq_combo_r[] = {KC_Z,   KC_J,     COMBO_END};
+const uint16_t PROGMEM psc_combo_r[] = {KC_Z,   KC_J,     COMBO_END};
 const uint16_t PROGMEM scl_combo_r[] = {KC_DOT, KC_N,     COMBO_END};
-//                                          L:  -  -  1  1  -
-const uint16_t PROGMEM con_combo_l[] = {KC_H,   KC_B,     COMBO_END};
-//                                          R:  -  1  1  -  -
-const uint16_t PROGMEM cof_combo_r[] = {KC_Y,   KC_W,     COMBO_END};
-//                                          L:  1  1  -  -  -
-const uint16_t PROGMEM g3d_combo_l[] = {KC_X,   KC_C,     COMBO_END};
-//                                          R:  -  -  -  1  1
-const uint16_t PROGMEM nmb_combo_r[] = {KC_P,   KC_J,     COMBO_END};
+const uint16_t PROGMEM nmb_combo_r[] = {KC_EQL, KC_K,     COMBO_END};
 
 // DATA: COMBO ASSIGNMENTS
 
@@ -160,31 +131,26 @@ combo_t key_combos[] = {
   /*   |XXX|   |___|   |___|   |XXX|   |___|               |___|   |XXX|   |___|   |___|   |XXX|   */
   [ALT_COMBO_L] = COMBO(alt_combo_l, KC_LALT),         [ALT_COMBO_R] = COMBO(alt_combo_r, KC_RALT),
   [CTL_COMBO_L] = COMBO(ctl_combo_l, KC_LCTL),         [CTL_COMBO_R] = COMBO(ctl_combo_r, KC_RCTL),
-  [G22_COMBO_L] = COMBO(g22_combo_l, TO(G2D2_LAYER)),  [MSE_COMBO_R] = COMBO(mse_combo_r, TO(MOUS_LAYER)),
+  [G3D_COMBO_L] = COMBO(g3d_combo_l, TO(GM3D_LAYER)),  [MSE_COMBO_R] = COMBO(mse_combo_r, TO(MOUS_LAYER)),
   /*   |___|   |___|   |___|   |XXX|   |XXX|               |XXX|   |XXX|   |___|   |___|   |___|   */
-  [PSC_COMBO_L] = COMBO(psc_combo_l, KC_PSCR),         [PSC_COMBO_R] = COMBO(psc_combo_r, KC_PSCR),
+  [CON_COMBO_L] = COMBO(con_combo_l, CAPS_ON),         [COF_COMBO_R] = COMBO(cof_combo_r, CAPS_OFF),
   [ESC_COMBO_L] = COMBO(esc_combo_l, KC_ESC),          [ENT_COMBO_R] = COMBO(ent_combo_r, KC_ENT),
   [GUI_COMBO_L] = COMBO(gui_combo_l, KC_LGUI),         [GUI_COMBO_R] = COMBO(gui_combo_r, KC_RGUI),
   /*   |XXX|   |___|   |___|   |___|   |XXX|               |XXX|   |___|   |___|   |___|   |XXX|   */
-  [MBQ_COMBO_L] = COMBO(mbq_combo_l, MBQ),             [MBQ_COMBO_R] = COMBO(mbq_combo_r, MBQ),
+  [PSC_COMBO_L] = COMBO(psc_combo_l, KC_PSCR),         [PSC_COMBO_R] = COMBO(psc_combo_r, KC_PSCR),
   [QTE_COMBO_L] = COMBO(qte_combo_l, KC_QUOTE),        [SCL_COMBO_R] = COMBO(scl_combo_r, KC_SCLN),
-  /*   |___|   |___|   |111|   |111|   |___|               |___|   |111|   |111|   |___|   |___|   */
-  [CON_COMBO_L] = COMBO(con_combo_l, CAPS_ON),         [COF_COMBO_R] = COMBO(cof_combo_r, CAPS_OFF),
-  /*   |111|   |111|   |___|   |___|   |___|               |___|   |___|   |___|   |111|   |111|   */
-  [G3D_COMBO_L] = COMBO(g3d_combo_l, TO(GM3D_LAYER)),  [NMB_COMBO_R] = COMBO(nmb_combo_r, TO(NMBR_LAYER)),
+                                                       [NMB_COMBO_R] = COMBO(nmb_combo_r, TO(NMBR_LAYER)),
 };
 
 // FUNCTION: COMBO
 // Exclude some combos from game layers
 bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode, keyrecord_t *record) {
     if (layer_state_is(GM2D_LAYER) ||
-        layer_state_is(GM3D_LAYER) ||
-        layer_state_is(G2D2_LAYER)) {
+        layer_state_is(GM3D_LAYER)) {
         switch (combo_index) {
             case ESC_COMBO_L:
             case ENT_COMBO_R:
             case G2D_COMBO_L:
-            case G22_COMBO_L:
             case G3D_COMBO_L:
             case ALP_COMBO_R:
             case MSE_COMBO_R:
@@ -198,8 +164,7 @@ bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode
 // Shorten combo term when in game layers
 uint16_t get_combo_term(uint16_t index, combo_t *combo) {
     if (layer_state_is(GM2D_LAYER) ||
-        layer_state_is(GM3D_LAYER) ||
-        layer_state_is(G2D2_LAYER))
+        layer_state_is(GM3D_LAYER))
         return 6;
     return COMBO_TERM;
 }
@@ -245,73 +210,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
         case CAPS_OFF:
             if (is_caps_word_on()) caps_word_off();
-            return false;
-        case MBQ:
-            // Ignore this key when registered
-            if (mbq.registered) return false;
-
-            // Open the queue when pressed
-            if (record->event.pressed) {
-                mbq.terminal = false;
-                mbq.active = true;
-                mbq.last_size = mbq.size;
-            }
-            // Assume terminal state when released
-            else {
-                mbq.terminal = true;
-                // Close queue if nothing added since last pressed
-                if (mbq.last_size == mbq.size) {
-                    mbq.active = false;
-                    mbq.size = mbq.last_size = 0;
-                    memset(mbq.queue, 0, sizeof(mbq.queue));
-                }
-            }
-            return false;
-        case KC_A ... KC_RGUI:
-            // Process key normally when queue not active
-            if (!mbq.active) return true;
-            // Process key normally when key pressed and queue registered
-            if (mbq.registered && record->event.pressed) return true;
-            // Do nothing when queue not registered and key released
-            if (!mbq.registered && !record->event.pressed) return false;
-
-            // DEDUCTION: Queue is registered xor key pressed and queue active
-
-            // Unregister queue when registered and key released
-            if (mbq.registered) {
-                for (unsigned short i = 0; i < mbq.size; i++)
-                    unregister_code(mbq.queue[i]);
-                mbq.active = mbq.registered = false;
-                mbq.size = mbq.last_size = 0;
-                memset(mbq.queue, 0, sizeof(mbq.queue));
-                return true;
-            }
-
-            // DEDUCTION: Key pressed and queue active but not registered
-
-            // See if keycode is in queue
-            bool in_queue = false;
-            for (unsigned short i = 0; i < mbq.size; i++)
-                if (mbq.queue[i] == keycode) {
-                    in_queue = true;
-                    break;
-                }
-            // Do nothing when key is nonterminal and in queue
-            if (!mbq.terminal && in_queue) return false;
-
-            // DEDUCTION: Key nonterminal and not in queue, or key terminal
-
-            // Add key to queue
-            if (!mbq.terminal || !in_queue) {
-                mbq.queue[mbq.size] = keycode;
-                mbq.size += 1;
-            }
-            // Register queue
-            if (mbq.terminal || mbq.size == MAX_MBQ) {
-                mbq.registered = true;
-                for (unsigned short i = 0; i < mbq.size; i++)
-                    register_code(mbq.queue[i]);
-            }
             return false;
         default: return true;
     }

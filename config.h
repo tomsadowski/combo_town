@@ -28,7 +28,7 @@
 #define COMBO_SHOULD_TRIGGER
 #define COMBO_TERM_PER_COMBO
 #define COMBO_STRICT_TIMER
-#define COMBO_TERM 31
+#define COMBO_TERM 28
 #define COMBO_ONLY_FROM_LAYER 0
 // Capswordery
 #define CAPS_WORD_INVERT_ON_SHIFT
@@ -36,3 +36,4 @@
 // Tappery
 #define PERMISSIVE_HOLD
 #define TAPPING_TERM 250
+#define QUICK_TAPPING_TERM 0

@@ -36,4 +36,4 @@
 // Tappery
 #define PERMISSIVE_HOLD
 #define TAPPING_TERM 250
-#define QUICK_TAPPING_TERM 0
+#define QUICK_TAP_TERM 0

@@ -2,7 +2,7 @@
   "version": 1,
   "notes": "This is a nonfunctioning keymap, don't flash your keyboard with it.",
   "documentation": "Keymap to be used as a visual reference for combos. Upload to QMK Configurator and print to generate images.",
-  "keyboard": "ferris/sweep",
+  "keyboard": "noony",
   "keymap": "visual_aid_for_combo_town_combos",
   "layout": "LAYOUT_split_3x5_2",
   "layers": [
@@ -15,7 +15,7 @@
     [
       "KC_L" ,   "KC_NO",   "KC_NO",   "KC_NO",   "KC_L" ,      "KC_R",    "KC_NO",   "KC_NO",   "KC_NO",   "KC_R",
       "KC_QUOT", "KC_NO",   "KC_NO",   "KC_NO",   "KC_QUOT",    "KC_SCLN", "KC_NO",   "KC_NO",   "KC_NO",   "KC_SCLN",
-      "TO(3)",   "KC_NO",   "KC_NO",   "KC_NO",   "TO(3)",      "TO(4)",   "KC_NO",   "KC_NO",   "KC_NO",   "TO(4)",
+      "KC_NO",   "KC_NO",   "KC_NO",   "KC_NO",   "KC_NO",      "TO(4)",   "KC_NO",   "KC_NO",   "KC_NO",   "TO(4)",
                                        "KC_NO",   "KC_NO",      "KC_NO",   "KC_NO"
     ],
     [

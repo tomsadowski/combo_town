@@ -8,7 +8,22 @@
 #include "keycodes.h"
 #include "quantum_keycodes.h"
 
-enum my_keycodes {CAPS_ON = SAFE_RANGE};
+#define MAX_TRAP 8
+
+enum my_keycodes {CAPS_ON = SAFE_RANGE, KEY_TRAP};
+typedef enum {CLOSED, OPEN, WATCHING, PULLED} key_trap_state;
+
+typedef struct {
+    key_trap_state state;
+    uint16_t caught_list[MAX_TRAP];
+    uint16_t pull_list[MAX_TRAP];
+    unsigned short csize;
+    unsigned short psize;
+    uint16_t puller;
+}
+key_trap;
+
+static key_trap trap = {CLOSED, {0}, {0}, 0, 0, KC_NO};
 
 // DATA: LAYERS
 
@@ -32,8 +47,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                    _______, KC_SPC,          KC_BTN1, KC_BTN2),
     [NMBR_LAYER] = LAYOUT_split_3x5_2( // NUMBER: digits, navigation keys, and symbols
         KC_1,    KC_2,    KC_3,    KC_4,    KC_5,            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
-        KC_LBRC, KC_RBRC, KC_BSLS, KC_SLSH, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
-        _______, KC_QUOT, KC_SCLN, KC_GRV,  _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
+        KC_LBRC, KC_RBRC, KC_QUOT, KC_SCLN, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
+        _______, KC_GRV,  KC_BSLS, KC_SLSH, _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
                                    _______, _______,         LT(MO_ALP_LYR, KC_SPC), _______),
     [MOUS_LAYER] = LAYOUT_split_3x5_2( // MOUSE: Mouse and function keys
         KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,           KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,
@@ -52,18 +67,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                    _______, _______,         LT(MO_MNM_LYR, KC_SPC), KC_DEL),
     [MO_MNM_LYR] = LAYOUT_split_3x5_2( // MOMENTARY NUMBER: accessed from MOMENTARY MOUSE ALPHA
         KC_1,    KC_2,    KC_3,    KC_4,    KC_5,            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
-        KC_LBRC, KC_RBRC, KC_BSLS, KC_SLSH, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
-        _______, KC_QUOT, KC_SCLN, KC_GRV,  _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
+        KC_LBRC, KC_RBRC, KC_QUOT, KC_SCLN, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
+        _______, KC_GRV,  KC_BSLS, KC_SLSH, _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
                                    _______, LT(MO_MAL_LYR, KC_SPC),          _______, _______),
     [MO_NMB_LYR] = LAYOUT_split_3x5_2( // MOMENTARY NUMBER: accessed from ALPHA
         KC_1,    KC_2,    KC_3,    KC_4,    KC_5,            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
-        KC_LBRC, KC_RBRC, KC_BSLS, KC_SLSH, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
-        _______, KC_QUOT, KC_SCLN, KC_GRV,  _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
+        KC_LBRC, KC_RBRC, KC_BSLS, KC_SCLN, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
+        _______, KC_GRV,  KC_BSLS, KC_SLSH, _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
                                    _______, KC_SPC,          _______, _______),
     [MO_MSE_LYR] = LAYOUT_split_3x5_2( // MOMENTARY MOUSE: accessed from ALPHA
         KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,           KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,
         KC_F11,  KC_F12,  KC_ACL1, KC_ACL0, _______,         _______, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R,
-        _______, _______, _______, KC_ACL2, _______,         _______, KC_WH_L, KC_WH_D, KC_WH_U, KC_WH_R,
+        CAPS_ON, KC_QUOT, KC_SCLN, KC_ACL2, _______,         _______, KC_WH_L, KC_WH_D, KC_WH_U, KC_WH_R,
                                    _______, _______,         KC_BTN1, KC_BTN2),
 };
 
@@ -73,7 +88,7 @@ enum combos {
   /*   |___|   |XXX|   |XXX|   |___|   |___|      |___|   |___|   |XXX|   |XXX|   |___|   */
                     SPC_COMBO_L,                               TAB_COMBO_R,
                     SFT_COMBO_L,                               SFT_COMBO_R,
-                    G2D_COMBO_L,                               ALP_COMBO_R,
+                    CAP_COMBO_L,                               ALP_COMBO_R,
   /*   |XXX|   |___|   |___|   |XXX|   |___|      |___|   |XXX|   |___|   |___|   |XXX|   */
                     ALT_COMBO_L,                               ALT_COMBO_R,
                     CTL_COMBO_L,                               CTL_COMBO_R,
@@ -83,18 +98,15 @@ enum combos {
                     ESC_COMBO_L,                               ENT_COMBO_R,
                     GUI_COMBO_L,                               GUI_COMBO_R,
   /*   |XXX|   |___|   |___|   |___|   |XXX|      |XXX|   |___|   |___|   |___|   |XXX|   */
-                    BSP_COMBO_L,                               DEL_COMBO_R,
-                    QTE_COMBO_L,                               SCL_COMBO_R,
-                                                               NMB_COMBO_R,
-  /*   |___|   |222|   |222|   |___|   |___|               |___|   |___|   |222|   |222|   |___|   */
-                                        CAP_COMBO_M,
+                    KTP_COMBO_L,                               KTP_COMBO_R,
+                    G2D_COMBO_L,                               NMB_COMBO_R,
 };
 
 // DATA: COMBO KEYS
 //                                          L:  -  X  X  -  -
 const uint16_t PROGMEM spc_combo_l[] = {KC_C,   KC_H,     COMBO_END};
 const uint16_t PROGMEM sft_combo_l[] = {KC_S,   KC_R,     COMBO_END};
-const uint16_t PROGMEM g2d_combo_l[] = {KC_F,   KC_L,     COMBO_END};
+const uint16_t PROGMEM cap_combo_l[] = {KC_F,   KC_L,     COMBO_END};
 //                                          L:  X  -  -  X  -
 const uint16_t PROGMEM alt_combo_l[] = {KC_X,   KC_B,     COMBO_END};
 const uint16_t PROGMEM ctl_combo_l[] = {KC_A,   KC_T,     COMBO_END};
@@ -104,8 +116,8 @@ const uint16_t PROGMEM psc_combo_l[] = {KC_B,   KC_Q,     COMBO_END};
 const uint16_t PROGMEM esc_combo_l[] = {KC_T,   KC_COMMA, COMBO_END};
 const uint16_t PROGMEM gui_combo_l[] = {KC_D,   KC_MINS,  COMBO_END};
 //                                          L:  X  -  -  -  X
-const uint16_t PROGMEM bsp_combo_l[] = {KC_X,   KC_Q,     COMBO_END};
-const uint16_t PROGMEM qte_combo_l[] = {KC_A,   KC_COMMA, COMBO_END};
+const uint16_t PROGMEM ktp_combo_l[] = {KC_X,   KC_Q,     COMBO_END};
+const uint16_t PROGMEM g2d_combo_l[] = {KC_A,   KC_COMM,     COMBO_END};
 //                                          R:  -  -  X  X  -
 const uint16_t PROGMEM tab_combo_r[] = {KC_W,   KC_P,     COMBO_END};
 const uint16_t PROGMEM sft_combo_r[] = {KC_I,   KC_O,     COMBO_END};
@@ -119,11 +131,8 @@ const uint16_t PROGMEM psc_combo_r[] = {KC_Z,   KC_Y,     COMBO_END};
 const uint16_t PROGMEM ent_combo_r[] = {KC_DOT, KC_E,     COMBO_END};
 const uint16_t PROGMEM gui_combo_r[] = {KC_EQL, KC_U,     COMBO_END};
 //                                          R:  X  -  -  -  X
-const uint16_t PROGMEM del_combo_r[] = {KC_Z,   KC_J,     COMBO_END};
-const uint16_t PROGMEM scl_combo_r[] = {KC_DOT, KC_N,     COMBO_END};
-const uint16_t PROGMEM nmb_combo_r[] = {KC_EQL, KC_K,     COMBO_END};
-//                                          M: - 2 2 - -   - - 2 2 -
-const uint16_t PROGMEM cap_combo_m[] = {KC_S, KC_R, KC_I, KC_O, COMBO_END};
+const uint16_t PROGMEM ktp_combo_r[] = {KC_Z,   KC_J,     COMBO_END};
+const uint16_t PROGMEM nmb_combo_r[] = {KC_DOT, KC_N,     COMBO_END};
 
 // DATA: COMBO ASSIGNMENTS
 
@@ -131,7 +140,7 @@ combo_t key_combos[] = {
   /*   |___|   |XXX|   |XXX|   |___|   |___|               |___|   |___|   |XXX|   |XXX|   |___|   */
   [SPC_COMBO_L] = COMBO(spc_combo_l, KC_SPC),          [TAB_COMBO_R] = COMBO(tab_combo_r, KC_TAB),
   [SFT_COMBO_L] = COMBO(sft_combo_l, KC_LSFT),         [SFT_COMBO_R] = COMBO(sft_combo_r, KC_RSFT),
-  [G2D_COMBO_L] = COMBO(g2d_combo_l, TO(GM2D_LAYER)),  [ALP_COMBO_R] = COMBO(alp_combo_r, TO(ALPHA_LAYER)),
+  [CAP_COMBO_L] = COMBO(cap_combo_l, CAPS_ON),         [ALP_COMBO_R] = COMBO(alp_combo_r, TO(ALPHA_LAYER)),
   /*   |XXX|   |___|   |___|   |XXX|   |___|               |___|   |XXX|   |___|   |___|   |XXX|   */
   [ALT_COMBO_L] = COMBO(alt_combo_l, KC_LALT),         [ALT_COMBO_R] = COMBO(alt_combo_r, KC_RALT),
   [CTL_COMBO_L] = COMBO(ctl_combo_l, KC_LCTL),         [CTL_COMBO_R] = COMBO(ctl_combo_r, KC_RCTL),
@@ -141,11 +150,8 @@ combo_t key_combos[] = {
   [ESC_COMBO_L] = COMBO(esc_combo_l, KC_ESC),          [ENT_COMBO_R] = COMBO(ent_combo_r, KC_ENT),
   [GUI_COMBO_L] = COMBO(gui_combo_l, KC_LGUI),         [GUI_COMBO_R] = COMBO(gui_combo_r, KC_RGUI),
   /*   |XXX|   |___|   |___|   |___|   |XXX|               |XXX|   |___|   |___|   |___|   |XXX|   */
-  [BSP_COMBO_L] = COMBO(bsp_combo_l, KC_BSPC),         [DEL_COMBO_R] = COMBO(del_combo_r, KC_DEL),
-  [QTE_COMBO_L] = COMBO(qte_combo_l, KC_QUOTE),        [SCL_COMBO_R] = COMBO(scl_combo_r, KC_SCLN),
-                                                       [NMB_COMBO_R] = COMBO(nmb_combo_r, TO(NMBR_LAYER)),
-  /*   |___|   |222|   |222|   |___|   |___|               |___|   |___|   |222|   |222|   |___|   */
-                             [CAP_COMBO_M] = COMBO(cap_combo_m, CAPS_ON),
+  [KTP_COMBO_L] = COMBO(ktp_combo_l, KEY_TRAP),        [KTP_COMBO_R] = COMBO(ktp_combo_r, KEY_TRAP),
+  [G2D_COMBO_L] = COMBO(g2d_combo_l, TO(GM2D_LAYER)),  [NMB_COMBO_R] = COMBO(nmb_combo_r, TO(NMBR_LAYER)),
 };
 
 // FUNCTION: COMBO
@@ -209,9 +215,42 @@ bool caps_word_press_user(uint16_t keycode) {
 }
 
 // FUNCTION: CAPS
-// Handles CAPS_ON/OFF
+// Handles CAPS_ON
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
+
+        case KEY_TRAP:
+            if (record->event.pressed) trap.state = OPEN;
+            else if (trap.state == CLOSED) return false;
+            else if (trap.psize > 0) trap.state = WATCHING;
+            else {
+                trap.puller = trap.pull_list[0];
+                memset(trap.pull_list, 0, sizeof(trap.pull_list));
+                trap.state = PULLED;
+            }
+            return false;
+
+        case KC_A ... KC_RGUI:
+            if (trap.state == CLOSED) return true;
+            if (record->event.pressed) {
+                // if keycode is pull_list then CLOSE
+                // if keycode cant fit in pull_list then CLOSE
+                // if (trap.state == OPEN) add(trap, trap.psize, keycode)
+                return true;
+            }
+            if (trap.state == OPEN) {
+                // remove from pull_list
+                // if keycode is caught_list then CLOSE
+                // if keycode cant fit in caught_list then CLOSE
+                // add to caught_list
+                return false;
+            }
+            if (trap.state == WATCHING || keycode == trap.puller){
+                // unreg caught_list
+                trap.state = CLOSED;
+            }
+            return true;
+
         case CAPS_ON:
             caps_word_on();
             return false;

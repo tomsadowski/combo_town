@@ -8,12 +8,12 @@
 #include "keycodes.h"
 #include "quantum_keycodes.h"
 
-#define MAX_TRAP 8
+//#define MAX_TRAP 8
 
-enum my_keycodes {CAPS_ON = SAFE_RANGE, KEY_TRAP};
-typedef enum {CLOSED, OPEN, WATCHING, PULLED} key_trap_state;
+enum my_keycodes {CAPS_ON = SAFE_RANGE, /* }; */ KEY_TRAP};
+//typedef enum {CLOSED, OPEN, WATCHING, PULLED} key_trap_state;
 
-typedef struct {
+/*typedef struct {
     key_trap_state state;
     uint16_t caught_list[MAX_TRAP];
     uint16_t pull_list[MAX_TRAP];
@@ -24,7 +24,7 @@ typedef struct {
 key_trap;
 
 static key_trap trap = {CLOSED, {0}, {0}, 0, 0, KC_NO};
-
+*/
 // DATA: LAYERS
 
 enum layers {ALPHA_LAYER, GM2D_LAYER, GM3D_LAYER, NMBR_LAYER, MOUS_LAYER,
@@ -47,8 +47,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                    _______, KC_SPC,          KC_BTN1, KC_BTN2),
     [NMBR_LAYER] = LAYOUT_split_3x5_2( // NUMBER: digits, navigation keys, and symbols
         KC_1,    KC_2,    KC_3,    KC_4,    KC_5,            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
-        KC_LBRC, KC_RBRC, KC_QUOT, KC_SCLN, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
-        _______, KC_GRV,  KC_BSLS, KC_SLSH, _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
+        KC_BSLS, KC_SLSH, KC_QUOT, KC_SCLN, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
+        _______, KC_GRV,  KC_LBRC, KC_RBRC, _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
                                    _______, _______,         LT(MO_ALP_LYR, KC_SPC), _______),
     [MOUS_LAYER] = LAYOUT_split_3x5_2( // MOUSE: Mouse and function keys
         KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,           KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,
@@ -67,18 +67,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                    _______, _______,         LT(MO_MNM_LYR, KC_SPC), KC_DEL),
     [MO_MNM_LYR] = LAYOUT_split_3x5_2( // MOMENTARY NUMBER: accessed from MOMENTARY MOUSE ALPHA
         KC_1,    KC_2,    KC_3,    KC_4,    KC_5,            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
-        KC_LBRC, KC_RBRC, KC_QUOT, KC_SCLN, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
-        _______, KC_GRV,  KC_BSLS, KC_SLSH, _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
+        KC_BSLS, KC_SLSH, KC_QUOT, KC_SCLN, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
+        _______, KC_GRV,  KC_LBRC, KC_RBRC, _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
                                    _______, LT(MO_MAL_LYR, KC_SPC),          _______, _______),
     [MO_NMB_LYR] = LAYOUT_split_3x5_2( // MOMENTARY NUMBER: accessed from ALPHA
         KC_1,    KC_2,    KC_3,    KC_4,    KC_5,            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
-        KC_LBRC, KC_RBRC, KC_BSLS, KC_SCLN, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
-        _______, KC_GRV,  KC_BSLS, KC_SLSH, _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
+        KC_BSLS, KC_SLSH, KC_QUOT, KC_SCLN, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
+        _______, KC_GRV,  KC_LBRC, KC_RBRC, _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
                                    _______, KC_SPC,          _______, _______),
     [MO_MSE_LYR] = LAYOUT_split_3x5_2( // MOMENTARY MOUSE: accessed from ALPHA
         KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,           KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,
         KC_F11,  KC_F12,  KC_ACL1, KC_ACL0, _______,         _______, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R,
-        CAPS_ON, KC_QUOT, KC_SCLN, KC_ACL2, _______,         _______, KC_WH_L, KC_WH_D, KC_WH_U, KC_WH_R,
+        _______, _______, KC_SCLN, KC_ACL2, _______,         _______, KC_WH_L, KC_WH_D, KC_WH_U, KC_WH_R,
                                    _______, _______,         KC_BTN1, KC_BTN2),
 };
 
@@ -220,17 +220,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
 
         case KEY_TRAP:
-            if (record->event.pressed) trap.state = OPEN;
+            /*if (record->event.pressed) trap.state = OPEN;
             else if (trap.state == CLOSED) return false;
             else if (trap.psize > 0) trap.state = WATCHING;
             else {
                 trap.puller = trap.pull_list[0];
                 memset(trap.pull_list, 0, sizeof(trap.pull_list));
                 trap.state = PULLED;
-            }
+            }*/
             return false;
 
-        case KC_A ... KC_RGUI:
+        /*case KC_A ... KC_RGUI:
             if (trap.state == CLOSED) return true;
             if (record->event.pressed) {
                 // if keycode is pull_list then CLOSE
@@ -249,7 +249,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 // unreg caught_list
                 trap.state = CLOSED;
             }
-            return true;
+            return true; */
 
         case CAPS_ON:
             caps_word_on();

@@ -1,6 +1,7 @@
 // tomsadowski
 // keymap for ferris-like keyboards
 
+#include <stdbool.h>
 #include "action_layer.h"
 #include "process_combo.h"
 #include QMK_KEYBOARD_H
@@ -8,12 +9,12 @@
 #include "keycodes.h"
 #include "quantum_keycodes.h"
 
-//#define MAX_TRAP 8
+#define MAX_TRAP 8
 
-enum my_keycodes {CAPS_ON = SAFE_RANGE, /* }; */ KEY_TRAP};
-//typedef enum {CLOSED, OPEN, WATCHING, PULLED} key_trap_state;
+enum my_keycodes {CAPS_ON = SAFE_RANGE, KEY_TRAP, ALPHA_ON_CAPS_OFF};
+typedef enum {CLOSED, OPEN, WATCHING, PULLED} key_trap_state;
 
-/*typedef struct {
+typedef struct {
     key_trap_state state;
     uint16_t caught_list[MAX_TRAP];
     uint16_t pull_list[MAX_TRAP];
@@ -24,7 +25,7 @@ enum my_keycodes {CAPS_ON = SAFE_RANGE, /* }; */ KEY_TRAP};
 key_trap;
 
 static key_trap trap = {CLOSED, {0}, {0}, 0, 0, KC_NO};
-*/
+
 // DATA: LAYERS
 
 enum layers {ALPHA_LAYER, GM2D_LAYER, GM3D_LAYER, NMBR_LAYER, MOUS_LAYER,
@@ -140,7 +141,7 @@ combo_t key_combos[] = {
   /*   |___|   |XXX|   |XXX|   |___|   |___|               |___|   |___|   |XXX|   |XXX|   |___|   */
   [SPC_COMBO_L] = COMBO(spc_combo_l, KC_SPC),          [TAB_COMBO_R] = COMBO(tab_combo_r, KC_TAB),
   [SFT_COMBO_L] = COMBO(sft_combo_l, KC_LSFT),         [SFT_COMBO_R] = COMBO(sft_combo_r, KC_RSFT),
-  [CAP_COMBO_L] = COMBO(cap_combo_l, CAPS_ON),         [ALP_COMBO_R] = COMBO(alp_combo_r, TO(ALPHA_LAYER)),
+  [CAP_COMBO_L] = COMBO(cap_combo_l, CAPS_ON),         [ALP_COMBO_R] = COMBO(alp_combo_r, ALPHA_ON_CAPS_OFF),
   /*   |XXX|   |___|   |___|   |XXX|   |___|               |___|   |XXX|   |___|   |___|   |XXX|   */
   [ALT_COMBO_L] = COMBO(alt_combo_l, KC_LALT),         [ALT_COMBO_R] = COMBO(alt_combo_r, KC_RALT),
   [CTL_COMBO_L] = COMBO(ctl_combo_l, KC_LCTL),         [CTL_COMBO_R] = COMBO(ctl_combo_r, KC_RCTL),
@@ -171,7 +172,6 @@ bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode
             default: return false;
         }
     }
-    if (combo_index == ALP_COMBO_R) caps_word_off();
     return true;
 }
 // Shorten combo term when in game layers
@@ -219,41 +219,69 @@ bool caps_word_press_user(uint16_t keycode) {
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
 
+        case ALPHA_ON_CAPS_OFF:
+            caps_word_off();
+            layer_move(ALPHA_LAYER);
+            return true;
+
         case KEY_TRAP:
-            /*if (record->event.pressed) trap.state = OPEN;
+            if (record->event.pressed) trap.state = OPEN;
+
+            // ...KEY IS RISEN
+
+            // something went wrong since key_trap was pressed, do nothing
             else if (trap.state == CLOSED) return false;
-            else if (trap.psize > 0) trap.state = WATCHING;
+            // all that was pressed was released, advance to watch state
+            else if (trap.psize == 0) trap.state = WATCHING;
+            // some that were pressed were not released, advance to pull state
             else {
                 trap.puller = trap.pull_list[0];
                 memset(trap.pull_list, 0, sizeof(trap.pull_list));
                 trap.state = PULLED;
-            }*/
+            }
             return false;
 
-        /*case KC_A ... KC_RGUI:
-            if (trap.state == CLOSED) return true;
-            if (record->event.pressed) {
-                // if keycode is pull_list then CLOSE
-                // if keycode cant fit in pull_list then CLOSE
-                // if (trap.state == OPEN) add(trap, trap.psize, keycode)
+        case KC_A ... KC_RGUI:
+
+            if (trap.state == CLOSED ||
+               (record->event.pressed && trap.state == PULLED))
+                return true;
+
+            // ...IF KEY PRESSED THEN TRAP NOT PULLED
+
+            if (record->event.pressed && trap.state == WATCHING) {
+                trap.puller = record->keycode;
+                trap.state = PULLED;
                 return true;
             }
-            if (trap.state == OPEN) {
-                // remove from pull_list
-                // if keycode is caught_list then CLOSE
-                // if keycode cant fit in caught_list then CLOSE
-                // add to caught_list
+
+            // ...IF KEY PRESSED THEN TRAP OPEN
+            if (record->event.pressed) {
+                if (trap.psize < MAX_TRAP) { // and not in pull_list
+                    // add to pull_list
+                }
+                else {
+                    // close out
+                }
+            }
+
+            // ...KEY IS RISEN
+
+            else if (trap.state == OPEN) {
+                // if keycode is in pull_list, remove from pull_list
+                // if keycode is in caught_list or caught_list is full then CLOSE
+                // else add to caught_list
                 return false;
             }
-            if (trap.state == WATCHING || keycode == trap.puller){
-                // unreg caught_list
-                trap.state = CLOSED;
+            else if (trap.state == PULLED && keycode == trap.puller) {
+                // unregister caught_list and CLOSE
             }
-            return true; */
+            return true;
 
         case CAPS_ON:
             caps_word_on();
             return false;
+
         default: return true;
     }
 }

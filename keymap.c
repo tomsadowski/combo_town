@@ -11,6 +11,9 @@
 
 #define MAX_TRAP 8
 
+bool list_contains(uint16_t *list, uint16_t element);
+void list_unregister(uint16_t *list);
+
 enum my_keycodes {CAPS_ON = SAFE_RANGE, KEY_TRAP, ALPHA_ON_CAPS_OFF};
 typedef enum {CLOSED, OPEN, WATCHING, PULLED} key_trap_state;
 
@@ -226,56 +229,42 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
         case KEY_TRAP:
             if (record->event.pressed) trap.state = OPEN;
-
-            // ...KEY IS RISEN
-
             // something went wrong since key_trap was pressed, do nothing
             else if (trap.state == CLOSED) return false;
             // all that was pressed was released, advance to watch state
             else if (trap.psize == 0) trap.state = WATCHING;
             // some that were pressed were not released, advance to pull state
             else {
+                trap.state = PULLED;
                 trap.puller = trap.pull_list[0];
                 memset(trap.pull_list, 0, sizeof(trap.pull_list));
-                trap.state = PULLED;
             }
             return false;
 
         case KC_A ... KC_RGUI:
 
             if (trap.state == CLOSED ||
-               (record->event.pressed && trap.state == PULLED))
+               (trap.state == PULLED &&
+                keycode != trap.puller)) {
                 return true;
-
-            // ...IF KEY PRESSED THEN TRAP NOT PULLED
-
+            }
             if (record->event.pressed && trap.state == WATCHING) {
-                trap.puller = record->keycode;
+                trap.puller = keycode;
                 trap.state = PULLED;
                 return true;
             }
-
-            // ...IF KEY PRESSED THEN TRAP OPEN
-            if (record->event.pressed) {
-                if (trap.psize < MAX_TRAP) { // and not in pull_list
-                    // add to pull_list
-                }
-                else {
-                    // close out
-                }
+            if (record->event.pressed && trap.psize < MAX_TRAP &&
+               !list_contains(trap.pull_list, keycode)) {
+                trap.pull_list[trap.psize] = keycode;
+                return true;
             }
-
-            // ...KEY IS RISEN
-
-            else if (trap.state == OPEN) {
+            if (trap.state == OPEN && trap.csize < MAX_TRAP &&
+               !list_contains(trap.caught_list, keycode)) {
+                trap.caught_list[trap.csize] = keycode;
                 // if keycode is in pull_list, remove from pull_list
-                // if keycode is in caught_list or caught_list is full then CLOSE
-                // else add to caught_list
                 return false;
             }
-            else if (trap.state == PULLED && keycode == trap.puller) {
-                // unregister caught_list and CLOSE
-            }
+            list_unregister(trap.caught_list);
             return true;
 
         case CAPS_ON:
@@ -284,4 +273,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
         default: return true;
     }
+}
+
+
+bool list_contains(uint16_t *list, uint16_t element) {
+    return true;
+}
+
+void list_unregister(uint16_t *list) {
+
 }

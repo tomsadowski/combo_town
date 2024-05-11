@@ -9,25 +9,21 @@
 #include "keycodes.h"
 #include "quantum_keycodes.h"
 
-#define MAX_TRAP 8
-
-bool list_contains(uint16_t *list, uint16_t element);
-void list_unregister(uint16_t *list);
+#define MAX_HOLD 8
 
 enum my_keycodes {CAPS_ON = SAFE_RANGE, KEY_TRAP, ALPHA_ON_CAPS_OFF};
-typedef enum {CLOSED, OPEN, WATCHING, PULLED} key_trap_state;
+typedef enum {CLOSED, HOLD, STANDBY, FREE} key_trap_state;
 
 typedef struct {
     key_trap_state state;
-    uint16_t caught_list[MAX_TRAP];
-    uint16_t pull_list[MAX_TRAP];
-    unsigned short csize;
-    unsigned short psize;
-    uint16_t puller;
+    uint16_t held_keys[MAX_HOLD];
+    uint16_t free_key;
+    unsigned short size;
+
 }
 key_trap;
 
-static key_trap trap = {CLOSED, {0}, {0}, 0, 0, KC_NO};
+static key_trap trap = {CLOSED, {0}, KC_NO, 0};
 
 // DATA: LAYERS
 
@@ -121,7 +117,7 @@ const uint16_t PROGMEM esc_combo_l[] = {KC_T,   KC_COMMA, COMBO_END};
 const uint16_t PROGMEM gui_combo_l[] = {KC_D,   KC_MINS,  COMBO_END};
 //                                          L:  X  -  -  -  X
 const uint16_t PROGMEM ktp_combo_l[] = {KC_X,   KC_Q,     COMBO_END};
-const uint16_t PROGMEM g2d_combo_l[] = {KC_A,   KC_COMM,     COMBO_END};
+const uint16_t PROGMEM g2d_combo_l[] = {KC_A,   KC_COMM,  COMBO_END};
 //                                          R:  -  -  X  X  -
 const uint16_t PROGMEM tab_combo_r[] = {KC_W,   KC_P,     COMBO_END};
 const uint16_t PROGMEM sft_combo_r[] = {KC_I,   KC_O,     COMBO_END};
@@ -228,43 +224,34 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return true;
 
         case KEY_TRAP:
-            if (record->event.pressed) trap.state = OPEN;
-            // something went wrong since key_trap was pressed, do nothing
-            else if (trap.state == CLOSED) return false;
-            // all that was pressed was released, advance to watch state
-            else if (trap.psize == 0) trap.state = WATCHING;
-            // some that were pressed were not released, advance to pull state
-            else {
-                trap.state = PULLED;
-                trap.puller = trap.pull_list[0];
-                memset(trap.pull_list, 0, sizeof(trap.pull_list));
-            }
+            if      (record->event.pressed)  trap.state = HOLD;
+            else if (trap.free_key == KC_NO) trap.state = STANDBY;
+            else                             trap.state = FREE;
             return false;
 
         case KC_A ... KC_RGUI:
-
-            if (trap.state == CLOSED ||
-               (trap.state == PULLED &&
-                keycode != trap.puller)) {
+            if (trap.state == CLOSED) return true;
+            if (record->event.pressed) {
+                if (trap.state != FREE)    trap.free_key = keycode;
+                if (trap.state == STANDBY) trap.state = FREE;
                 return true;
             }
-            if (record->event.pressed && trap.state == WATCHING) {
-                trap.puller = keycode;
-                trap.state = PULLED;
-                return true;
-            }
-            if (record->event.pressed && trap.psize < MAX_TRAP &&
-               !list_contains(trap.pull_list, keycode)) {
-                trap.pull_list[trap.psize] = keycode;
-                return true;
-            }
-            if (trap.state == OPEN && trap.csize < MAX_TRAP &&
-               !list_contains(trap.caught_list, keycode)) {
-                trap.caught_list[trap.csize] = keycode;
-                // if keycode is in pull_list, remove from pull_list
+            if (trap.state == HOLD && trap.size < MAX_HOLD) {
+                if (keycode == trap.free_key)
+                    trap.free_key = KC_NO;
+                trap.held_keys[trap.size - 1] = keycode;
+                trap.size++;
                 return false;
             }
-            list_unregister(trap.caught_list);
+            if (trap.state == HOLD || trap.free_key == keycode) {
+                for (int i = 0; i < trap.size; i++) {
+                    unregister_code(trap.held_keys[i]);
+                    trap.held_keys[i] = KC_NO;
+                }
+                trap.size = 0;
+                trap.free_key = KC_NO;
+                trap.state = CLOSED;
+            }
             return true;
 
         case CAPS_ON:
@@ -273,13 +260,4 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
         default: return true;
     }
-}
-
-
-bool list_contains(uint16_t *list, uint16_t element) {
-    return true;
-}
-
-void list_unregister(uint16_t *list) {
-
 }

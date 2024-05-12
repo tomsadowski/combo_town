@@ -239,7 +239,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             if (trap.state == HOLD && trap.size < MAX_HOLD) {
                 if (keycode == trap.free_key)
                     trap.free_key = KC_NO;
-                trap.held_keys[trap.size - 1] = keycode;
+                trap.held_keys[trap.size] = keycode;
                 trap.size++;
                 return false;
             }

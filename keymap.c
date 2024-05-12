@@ -1,7 +1,6 @@
 // tomsadowski
-// keymap for ferris-like keyboards
+// keymap for split_3x5_2 keyboards
 
-#include <stdbool.h>
 #include "action_layer.h"
 #include "process_combo.h"
 #include QMK_KEYBOARD_H
@@ -13,19 +12,14 @@
 
 enum my_keycodes {CAPS_ON = SAFE_RANGE, KEY_TRAP, ALPHA_ON_CAPS_OFF};
 typedef enum {CLOSED, HOLD, STANDBY, FREE} key_trap_state;
-
 typedef struct {
     key_trap_state state;
     uint16_t held_keys[MAX_HOLD];
     uint16_t free_key;
     unsigned short size;
-
 }
 key_trap;
-
 static key_trap trap = {CLOSED, {0}, KC_NO, 0};
-
-// DATA: LAYERS
 
 enum layers {ALPHA_LAYER, GM2D_LAYER, GM3D_LAYER, NMBR_LAYER, MOUS_LAYER,
              MO_ALP_LYR, MO_MAL_LYR, MO_MNM_LYR, MO_NMB_LYR, MO_MSE_LYR};
@@ -82,8 +76,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                    _______, _______,         KC_BTN1, KC_BTN2),
 };
 
-// DATA: COMBO NAMES
-
 enum combos {
   /*   |___|   |XXX|   |XXX|   |___|   |___|      |___|   |___|   |XXX|   |XXX|   |___|   */
                     SPC_COMBO_L,                               TAB_COMBO_R,
@@ -102,7 +94,6 @@ enum combos {
                     G2D_COMBO_L,                               NMB_COMBO_R,
 };
 
-// DATA: COMBO KEYS
 //                                          L:  -  X  X  -  -
 const uint16_t PROGMEM spc_combo_l[] = {KC_C,   KC_H,     COMBO_END};
 const uint16_t PROGMEM sft_combo_l[] = {KC_S,   KC_R,     COMBO_END};
@@ -134,8 +125,6 @@ const uint16_t PROGMEM gui_combo_r[] = {KC_EQL, KC_U,     COMBO_END};
 const uint16_t PROGMEM ktp_combo_r[] = {KC_Z,   KC_J,     COMBO_END};
 const uint16_t PROGMEM nmb_combo_r[] = {KC_DOT, KC_N,     COMBO_END};
 
-// DATA: COMBO ASSIGNMENTS
-
 combo_t key_combos[] = {
   /*   |___|   |XXX|   |XXX|   |___|   |___|               |___|   |___|   |XXX|   |XXX|   |___|   */
   [SPC_COMBO_L] = COMBO(spc_combo_l, KC_SPC),          [TAB_COMBO_R] = COMBO(tab_combo_r, KC_TAB),
@@ -154,7 +143,6 @@ combo_t key_combos[] = {
   [G2D_COMBO_L] = COMBO(g2d_combo_l, TO(GM2D_LAYER)),  [NMB_COMBO_R] = COMBO(nmb_combo_r, TO(NMBR_LAYER)),
 };
 
-// FUNCTION: COMBO
 // Exclude some combos from game layers
 bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode, keyrecord_t *record) {
     if (layer_state_is(GM2D_LAYER) ||
@@ -173,6 +161,7 @@ bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode
     }
     return true;
 }
+
 // Shorten combo term when in game layers
 uint16_t get_combo_term(uint16_t index, combo_t *combo) {
     if (layer_state_is(GM2D_LAYER) ||
@@ -181,9 +170,7 @@ uint16_t get_combo_term(uint16_t index, combo_t *combo) {
     return COMBO_TERM;
 }
 
-
-// FUNCTION: LAYER
-// Switching to MOUS_LAYER or NMBR_LAYER breaks capsword
+// Switching to non-alpha layers breaks capsword
 layer_state_t layer_state_set_user(layer_state_t state) {
     switch (get_highest_layer(state)) {
         case GM2D_LAYER ... MOUS_LAYER:
@@ -193,7 +180,6 @@ layer_state_t layer_state_set_user(layer_state_t state) {
   return state;
 }
 
-// FUNCTION: CAPSWORD
 // Space does not break capsword
 bool caps_word_press_user(uint16_t keycode) {
     switch (keycode) {
@@ -213,27 +199,31 @@ bool caps_word_press_user(uint16_t keycode) {
     }
 }
 
-// FUNCTION: CAPS
-// Handles CAPS_ON
+// Define behavior of custom keys
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-
         case ALPHA_ON_CAPS_OFF:
             caps_word_off();
             layer_move(ALPHA_LAYER);
             return true;
 
         case KEY_TRAP:
-            if      (record->event.pressed)  trap.state = HOLD;
-            else if (trap.free_key == KC_NO) trap.state = STANDBY;
-            else                             trap.state = FREE;
+            if (record->event.pressed)
+                trap.state = HOLD;
+            else if (trap.free_key == KC_NO)
+                trap.state = STANDBY;
+            else
+                trap.state = FREE;
             return false;
 
         case KC_A ... KC_RGUI:
-            if (trap.state == CLOSED) return true;
+            if (trap.state == CLOSED)
+                return true;
             if (record->event.pressed) {
-                if (trap.state != FREE)    trap.free_key = keycode;
-                if (trap.state == STANDBY) trap.state = FREE;
+                if (trap.state != FREE)
+                    trap.free_key = keycode;
+                if (trap.state == STANDBY)
+                    trap.state = FREE;
                 return true;
             }
             if (trap.state == HOLD && trap.size < MAX_HOLD) {

@@ -18,7 +18,7 @@ Note: Due to the left-click button, you must first access the Alpha Layer with t
 
 ## Combos  
 
-The image below will be improved in due time. Currently, the labels for the mode combos only refer to the underlying numbers associated with each mode. A new user will have to try the combos out to see what mode a given combo switches to.
+The image below will be improved in due time. Currently, the labels for the mode-switching combos only refer to the underlying numbers associated with each mode. A new user will have to try the combos out to see what mode a given combo switches to.
 
 ![combos](https://github.com/tomsadowski/combo_town/blob/master/documentation_assets/combos.jpg) 
 

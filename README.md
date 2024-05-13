@@ -20,7 +20,7 @@ Note: Due to the left-click button, you must first access the Alpha Layer with t
 
 Because some combos share keys, the following list of combos is shown across multiple images.    
 
-![combos](https://github.com/tomsadowski/combo_town/blob/master/documentation_assets/combos.png) 
+![combos](https://github.com/tomsadowski/combo_town/blob/master/documentation_assets/combos.jpg) 
 
 ## Bonus: Game Modes   
 

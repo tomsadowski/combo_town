@@ -20,12 +20,7 @@ Note: Due to the left-click button, you must first access the Alpha Layer with t
 
 Because some combos share keys, the following list of combos is shown across multiple images.    
 
-![combos_1_of_3](https://github.com/tomsadowski/combo_town/blob/master/documentation_assets/combos_1.png) 
-
-![combos_2_of_3](https://github.com/tomsadowski/combo_town/blob/master/documentation_assets/combos_2.png)  
-Note: Capslock will also end if the mode is changed to Mouse or Number, or if Ctrl, Alt, OS, or Escape is pressed.   
-
-![combos_3_of_3](https://github.com/tomsadowski/combo_town/blob/master/documentation_assets/combos_3.png)  
+![combos](https://github.com/tomsadowski/combo_town/blob/master/documentation_assets/combos.png) 
 
 ## Bonus: Game Modes   
 

@@ -2,20 +2,20 @@
   "version": 1,
   "notes": "This is a nonfunctioning keymap, don't flash your keyboard with it.",
   "documentation": "Keymap to be used as a visual reference for combos. Upload to QMK Configurator and print to generate images.",
-  "keyboard": "noony",
+  "keyboard": "ferris/sweep",
   "keymap": "visual_aid_for_combo_town_combos",
   "layout": "LAYOUT_split_3x5_2",
   "layers": [
     [
       "KC_LALT", "KC_SPC",  "KC_SPC",  "KC_LALT", "KC_NO",      "KC_NO",   "KC_RALT", "KC_TAB",  "KC_TAB",  "KC_RALT",
       "KC_LCTL", "KC_LSFT", "KC_LSFT", "KC_LCTL", "KC_NO",      "KC_NO",   "KC_RCTL", "KC_RSFT", "KC_RSFT", "KC_RCTL",
-      "TO(2)",   "TO(1)",   "TO(1)",   "TO(2)",   "KC_NO",      "KC_NO",   "TO(5)",   "TO(0)",   "TO(0)",   "TO(5)",
+      "TO(2)",   "KC_NO",   "KC_NO",   "TO(2)",   "KC_NO",      "KC_NO",   "TO(5)",   "TO(0)",   "TO(0)",   "TO(5)",
                                        "KC_NO",   "KC_NO",      "KC_NO",   "KC_NO"
     ],
     [
-      "KC_L" ,   "KC_NO",   "KC_NO",   "KC_NO",   "KC_L" ,      "KC_R",    "KC_NO",   "KC_NO",   "KC_NO",   "KC_R",
-      "KC_QUOT", "KC_NO",   "KC_NO",   "KC_NO",   "KC_QUOT",    "KC_SCLN", "KC_NO",   "KC_NO",   "KC_NO",   "KC_SCLN",
-      "KC_NO",   "KC_NO",   "KC_NO",   "KC_NO",   "KC_NO",      "TO(4)",   "KC_NO",   "KC_NO",   "KC_NO",   "TO(4)",
+      "KC_NO" ,  "KC_NO",   "KC_NO",   "KC_NO",   "KC_NO",      "KC_NO",   "KC_NO",   "KC_NO",   "KC_NO",   "KC_NO",
+      "TO(1)",   "KC_NO",   "KC_NO",   "KC_NO",   "TO(1)",      "TO(4)",   "KC_NO",   "KC_NO",   "KC_NO",   "TO(4)",
+      "KC_NO",   "KC_NO",   "KC_NO",   "KC_NO",   "KC_NO",      "KC_NO",   "KC_NO",   "KC_NO",   "KC_NO",   "KC_NO",
                                        "KC_NO",   "KC_NO",      "KC_NO",   "KC_NO"
     ],
     [

@@ -59,7 +59,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_A,   KC_S,     KC_R,    KC_T,    _______,         _______, KC_E,    KC_I,    KC_O,     KC_N,
         KC_V,   KC_F,     KC_L,    KC_D,    _______,         _______, KC_U,    KC_M,    KC_G,     KC_K,
                                    _______, _______,         LT(MO_MNM_LYR, KC_SPC), KC_DEL),
-    [MO_MNM_LYR] = LAYOUT_split_3x5_2( // MOMENTARY NUMBER: accessed from MOMENTARY MOUSE ALPHA
+    [MO_MNM_LYR] = LAYOUT_split_3x5_2( // MOMENTARY MOUSE NUMBER: accessed from MOMENTARY MOUSE ALPHA
         KC_1,    KC_2,    KC_3,    KC_4,    KC_5,            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
         KC_BSLS, KC_SLSH, KC_QUOT, KC_SCLN, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
         _______, KC_GRV,  KC_LBRC, KC_RBRC, _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,

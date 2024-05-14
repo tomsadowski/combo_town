@@ -10,7 +10,7 @@ There are 3 modes: Alpha, Mouse, and Number.
 
 ![mouse_mode_graph](https://github.com/tomsadowski/combo_town/blob/master/documentation_assets/mouse_graph.jpg)  
 
-Note: Due to the left-click button, you must first access the Alpha Layer with the left thumb before accessing the Number Layer with the right thumb.
+Note: Due to the left-click button, you must first access the Alpha Layer with the left thumb before accessing the Number Layer with the right thumb.  
 
 ---  
 
@@ -18,7 +18,7 @@ Note: Due to the left-click button, you must first access the Alpha Layer with t
 
 ## Combos  
 
-The image below will be improved in due time. Currently, the labels for the mode-switching combos only refer to the underlying numbers associated with each mode. A new user will have to try the combos out to see what mode a given combo switches to.
+In this image you'll see combos for Left Keytrap and Right Keytrap. This feature is used when you need to press a multiple keys at the same time, but those keys are located on different layers from each other. While the keytrap is held, the keyboard will not send key-release signals to the computer. Once you release a key without the keytrap held, all previously withheld release signals will be sent. If you don't think you understand, try playing with the feature. It's pretty simple and you'll probably never need it.   
 
 ![combos](https://github.com/tomsadowski/combo_town/blob/master/documentation_assets/combos.jpg) 
 

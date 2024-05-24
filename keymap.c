@@ -66,12 +66,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                                _______, _______,         LT(MO_MNM_LYR, KC_SPC),            KC_DEL),
     [MO_MNM_LYR] = LAYOUT_split_3x5_2( // MOMENTARY MOUSE NUMBER: accessed from MOMENTARY MOUSE ALPHA
         KC_1,    KC_2,    KC_3,    KC_4,    KC_5,            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
-        KC_BSLS, KC_SLSH, KC_QUOT, KC_SCLN, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
+        KC_BSLS, KC_SLSH, KC_QUOT, KC_SCLN, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT,
         _______, KC_GRV,  KC_LBRC, KC_RBRC, _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
                                   _______, LT(MO_MAL_LYR, KC_SPC),       _______, _______),
     [MO_NMB_LYR] = LAYOUT_split_3x5_2( // MOMENTARY NUMBER: accessed from ALPHA
         KC_1,    KC_2,    KC_3,    KC_4,    KC_5,            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
-        KC_BSLS, KC_SLSH, KC_QUOT, KC_SCLN, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,
+        KC_BSLS, KC_SLSH, KC_QUOT, KC_SCLN, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT,
         _______, KC_GRV,  KC_LBRC, KC_RBRC, _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
                                                _______, KC_SPC,          _______, _______),
     [MO_MSE_LYR] = LAYOUT_split_3x5_2( // MOMENTARY MOUSE: accessed from ALPHA

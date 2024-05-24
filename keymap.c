@@ -21,7 +21,7 @@ typedef struct {
 key_trap;
 static key_trap trap = {CLOSED, {0}, KC_NO, 0};
 
-enum layers {ALPHA_LAYER, GM2D_LAYER, GM3D_LAYER, NMBR_LAYER, MOUS_LAYER,
+enum layers {ALPHA_LAYER, GM2D_LAYER, ANIMAL_WELL_LOL, GM3D_LAYER, NMBR_LAYER, MOUS_LAYER,
              MO_ALP_LYR, MO_MAL_LYR, MO_MNM_LYR, MO_NMB_LYR, MO_MSE_LYR};
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [ALPHA_LAYER] = LAYOUT_split_3x5_2( // ALPHA: Alphabet, punctuation, editing
@@ -34,6 +34,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
         _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
                                    _______, KC_SPC,          KC_0,    _______),
+    [ANIMAL_WELL_LOL] = LAYOUT_split_3x5_2( // animal well lol
+        KC_A, KC_W, KC_S,  KC_D, KC_F,                       KC_G,    KC_H, KC_J, KC_K, KC_L,
+        KC_LEFT, KC_UP, KC_DOWN,   KC_RIGHT, _______,        _______, KC_SPC,    KC_Z,    KC_X,  KC_C,
+        KC_4, KC_5, KC_6, KC_7,  KC_8,        KC_9, KC_0,   KC_1,    KC_2,  KC_3,
+                                   _______, KC_LSFT,                        KC_V,    _______),
     [GM3D_LAYER] = LAYOUT_split_3x5_2( // GAME 3D: Game 2d but with mouse
         _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
         _______, _______, _______, _______, _______,         _______, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R,
@@ -92,6 +97,7 @@ enum combos {
   /*   |XXX|   |___|   |___|   |___|   |XXX|      |XXX|   |___|   |___|   |___|   |XXX|   */
                     KTP_COMBO_L,                               KTP_COMBO_R,
                     G2D_COMBO_L,                               NMB_COMBO_R,
+                    ANI_COMBO_L,
 };
 
 //                                          L:  -  X  X  -  -
@@ -109,6 +115,7 @@ const uint16_t PROGMEM gui_combo_l[] = {KC_D,   KC_MINS,  COMBO_END};
 //                                          L:  X  -  -  -  X
 const uint16_t PROGMEM ktp_combo_l[] = {KC_X,   KC_Q,     COMBO_END};
 const uint16_t PROGMEM g2d_combo_l[] = {KC_A,   KC_COMM,  COMBO_END};
+const uint16_t PROGMEM ani_combo_l[] = {KC_V,   KC_MINS,  COMBO_END};
 //                                          R:  -  -  X  X  -
 const uint16_t PROGMEM tab_combo_r[] = {KC_W,   KC_P,     COMBO_END};
 const uint16_t PROGMEM sft_combo_r[] = {KC_I,   KC_O,     COMBO_END};
@@ -141,11 +148,14 @@ combo_t key_combos[] = {
   /*   |XXX|   |___|   |___|   |___|   |XXX|               |XXX|   |___|   |___|   |___|   |XXX|   */
   [KTP_COMBO_L] = COMBO(ktp_combo_l, KEY_TRAP),        [KTP_COMBO_R] = COMBO(ktp_combo_r, KEY_TRAP),
   [G2D_COMBO_L] = COMBO(g2d_combo_l, TO(GM2D_LAYER)),  [NMB_COMBO_R] = COMBO(nmb_combo_r, TO(NMBR_LAYER)),
+  [ANI_COMBO_L] = COMBO(ani_combo_l, TO(ANIMAL_WELL_LOL)),
+
 };
 
 // Exclude some combos from game layers
 bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode, keyrecord_t *record) {
     if (layer_state_is(GM2D_LAYER) ||
+        layer_state_is(ANIMAL_WELL_LOL) ||
         layer_state_is(GM3D_LAYER)) {
         switch (combo_index) {
             case ESC_COMBO_L:
@@ -165,6 +175,7 @@ bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode
 // Shorten combo term when in game layers
 uint16_t get_combo_term(uint16_t index, combo_t *combo) {
     if (layer_state_is(GM2D_LAYER) ||
+        layer_state_is(ANIMAL_WELL_LOL) ||
         layer_state_is(GM3D_LAYER))
         return 6;
     return COMBO_TERM;

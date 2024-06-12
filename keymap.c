@@ -208,7 +208,24 @@ bool caps_word_press_user(uint16_t keycode) {
         default: return true;
     }
 }
-
+// prevent user from accidentally triggering F keys
+bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case LT(MO_MSE_LYR, KC_SPC):
+            return true;
+        default:
+            return false;
+    }
+}
+// common symbols like apostrophe can be accessed without breaking flow
+bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case LT(MO_NMB_LYR, KC_SPC):
+            return true;
+        default:
+            return false;
+    }
+}
 // Define behavior of custom keys
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {

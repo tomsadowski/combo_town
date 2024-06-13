@@ -19,6 +19,8 @@ typedef struct {
 }
 key_trap;
 static key_trap trap = {CLOSED, {0}, KC_NO, 0};
+void trap_process_key_down(uint16_t);
+bool trap_process_key_up(uint16_t);
 
 enum td_keycodes {BSP_TRAP, DEL_TRAP};
 typedef enum {UNKNOWN, TAP, TRAP} td_state_t;
@@ -50,7 +52,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [LNMB_LAYER] = LAYOUT_split_3x5_2( // LEFT NUMBER
         KC_1,    KC_2,    KC_3,    KC_4,    KC_5,            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
         KC_LEFT, KC_UP,   KC_DOWN, KC_RGHT, _______,         _______, KC_SCLN, KC_QUOT, KC_SLSH, KC_BSLS,
-        KC_HOME, KC_PGUP, KC_PGDN, KC_END,  _______,         _______, KC_EQL,  KC_MINS,  KC_LBRC, KC_RBRC,
+        KC_HOME, KC_PGUP, KC_PGDN, KC_END,  _______,         _______, KC_MINS,  KC_EQL,  KC_LBRC, KC_RBRC,
                                                _______, KC_SPC,          KC_SPC,  _______),
     [LMSE_LAYER] = LAYOUT_split_3x5_2( // LEFT MOUSE
         KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,           KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,
@@ -60,7 +62,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [NMBR_LAYER] = LAYOUT_split_3x5_2( // NUMBER: digits, navigation keys, and symbols
         KC_1,    KC_2,    KC_3,    KC_4,    KC_5,            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
         KC_BSLS, KC_SLSH, KC_QUOT, KC_SCLN, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT,
-        KC_LBRC, KC_RBRC, KC_MINS, KC_EQL,  _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
+        KC_LBRC, KC_RBRC, KC_EQL,  KC_MINS, _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
                                                _______, _______,         LT(MO_ALP_LYR, KC_SPC),            _______),
     [MOUS_LAYER] = LAYOUT_split_3x5_2( // MOUSE: Mouse and function keys
         KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,           KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,
@@ -80,12 +82,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [MO_MNM_LYR] = LAYOUT_split_3x5_2( // MOMENTARY MOUSE NUMBER: accessed from MOMENTARY MOUSE ALPHA
         KC_1,    KC_2,    KC_3,    KC_4,    KC_5,            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
         KC_BSLS, KC_SLSH, KC_QUOT, KC_SCLN, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT,
-        KC_LBRC, KC_RBRC, KC_MINS, KC_EQL,  _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
+        KC_LBRC, KC_RBRC, KC_EQL,  KC_MINS,  _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
                                   _______, LT(MO_MAL_LYR, KC_SPC),       _______, _______),
     [MO_NMB_LYR] = LAYOUT_split_3x5_2( // MOMENTARY NUMBER: accessed from ALPHA
         KC_1,    KC_2,    KC_3,    KC_4,    KC_5,            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,
         KC_BSLS, KC_SLSH, KC_QUOT, KC_SCLN, _______,         _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT,
-        KC_LBRC, KC_RBRC, KC_MINS, KC_EQL,  _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
+        KC_LBRC, KC_RBRC, KC_EQL,  KC_MINS, _______,         _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,
                                                _______, KC_SPC,          _______, _______),
     [MO_MSE_LYR] = LAYOUT_split_3x5_2( // MOMENTARY MOUSE: accessed from ALPHA
         KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,           KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,
@@ -232,7 +234,7 @@ bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
 // FUNCTION: TAPDANCE
 // Return tapdance state as an enum value
 td_state_t td_get_state(tap_dance_state_t *state) {
-    if (!state->pressed)
+    if (state->interrupted || !state->pressed)
         return TAP;
     else return TRAP;
 }
@@ -240,6 +242,7 @@ void td_del_trap_finished(tap_dance_state_t *state, void *user_data) {
     td_del_trap_state = td_get_state(state);
     switch (td_del_trap_state) {
         case TAP:
+            trap_process_key_down(KC_DEL);
             register_code(KC_DEL);
             break;
         case TRAP:
@@ -251,7 +254,8 @@ void td_del_trap_finished(tap_dance_state_t *state, void *user_data) {
 void td_del_trap_reset(tap_dance_state_t *state, void *user_data) {
     switch (td_del_trap_state) {
         case TAP:
-            unregister_code(KC_DEL);
+            if (trap_process_key_up(KC_DEL))
+                unregister_code(KC_DEL);
             break;
         case TRAP:
             if (trap.free_key == KC_NO) trap.state = STANDBY;
@@ -264,6 +268,7 @@ void td_bsp_trap_finished(tap_dance_state_t *state, void *user_data) {
     td_bsp_trap_state = td_get_state(state);
     switch (td_bsp_trap_state) {
         case TAP:
+            trap_process_key_down(KC_BSPC);
             register_code(KC_BSPC);
             break;
         case TRAP:
@@ -275,7 +280,8 @@ void td_bsp_trap_finished(tap_dance_state_t *state, void *user_data) {
 void td_bsp_trap_reset(tap_dance_state_t *state, void *user_data) {
     switch (td_bsp_trap_state) {
         case TAP:
-            unregister_code(KC_BSPC);
+            if (trap_process_key_up(KC_BSPC))
+                unregister_code(KC_BSPC);
             break;
         case TRAP:
             if (trap.free_key == KC_NO) trap.state = STANDBY;
@@ -284,7 +290,31 @@ void td_bsp_trap_reset(tap_dance_state_t *state, void *user_data) {
         default: break;
     }
 }
-// Define behavior of custom keys
+void trap_process_key_down(uint16_t keycode) {
+    if (trap.state != FREE)
+        trap.free_key = keycode;
+    if (trap.state == STANDBY)
+        trap.state = FREE;
+}
+bool trap_process_key_up(uint16_t keycode) {
+    if (trap.state == HOLD && trap.size < MAX_HOLD) {
+        if (keycode == trap.free_key)
+            trap.free_key = KC_NO;
+        trap.held_keys[trap.size] = keycode;
+        trap.size++;
+        return false;
+    }
+    if (trap.state == HOLD || trap.free_key == keycode) {
+        for (int i = 0; i < trap.size; i++) {
+            unregister_code(trap.held_keys[i]);
+            trap.held_keys[i] = KC_NO;
+        }
+        trap.size = 0;
+        trap.free_key = KC_NO;
+        trap.state = CLOSED;
+    }
+    return true;
+}
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case ALPHA_ON_CAPS_OFF:
@@ -296,29 +326,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             if (trap.state == CLOSED)
                 return true;
             if (record->event.pressed) {
-                if (trap.state != FREE)
-                    trap.free_key = keycode;
-                if (trap.state == STANDBY)
-                    trap.state = FREE;
+                trap_process_key_down(keycode);
                 return true;
             }
-            if (trap.state == HOLD && trap.size < MAX_HOLD) {
-                if (keycode == trap.free_key)
-                    trap.free_key = KC_NO;
-                trap.held_keys[trap.size] = keycode;
-                trap.size++;
-                return false;
-            }
-            if (trap.state == HOLD || trap.free_key == keycode) {
-                for (int i = 0; i < trap.size; i++) {
-                    unregister_code(trap.held_keys[i]);
-                    trap.held_keys[i] = KC_NO;
-                }
-                trap.size = 0;
-                trap.free_key = KC_NO;
-                trap.state = CLOSED;
-            }
-            return true;
+            return trap_process_key_up(keycode);
 
         case CAPS_ON:
             caps_word_on();

@@ -1,4 +1,5 @@
 # disabled features
+TAP_DANCE_ENABLE = no
 CONSOLE_ENABLE = no
 COMMAND_ENABLE = no
 EXTRAKEY_ENABLE = no
@@ -8,7 +9,6 @@ MAGIC_ENABLE = no
 LEADER_ENABLE = no
 REPEAT_KEY_ENABLE = no
 # enabled features
-TAP_DANCE_ENABLE = yes
 LTO_ENABLE = yes
 COMBO_ENABLE = yes
 CAPS_WORD_ENABLE = yes

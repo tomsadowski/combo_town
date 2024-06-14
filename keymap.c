@@ -9,7 +9,8 @@
 #include "quantum_keycodes.h"
 
 #define MAX_HOLD 8
-enum my_keycodes {CAPS_ON = SAFE_RANGE, ALPHA_ON_CAPS_OFF};
+
+enum my_keycodes {CAPS_ON = SAFE_RANGE, ALPHA_ON_CAPS_OFF, KEY_TRAP};
 typedef enum {CLOSED, HOLD, STANDBY, FREE} key_trap_state;
 typedef struct {
     key_trap_state state;
@@ -19,22 +20,8 @@ typedef struct {
 }
 key_trap;
 static key_trap trap = {CLOSED, {0}, KC_NO, 0};
-void trap_process_key_down(uint16_t);
-bool trap_process_key_up(uint16_t);
-
-enum td_keycodes {BSP_TRAP, DEL_TRAP};
-typedef enum {UNKNOWN, TAP, TRAP} td_state_t;
-static td_state_t td_bsp_trap_state = UNKNOWN; // MO_NMB_LAYER when held, CAPSWORD when tapped
-static td_state_t td_del_trap_state = UNKNOWN; // MO_NMB_LAYER when held, CAPSWORD when tapped
-void td_bsp_trap_finished (tap_dance_state_t*, void*);
-void td_bsp_trap_reset (tap_dance_state_t*, void*);
-void td_del_trap_finished (tap_dance_state_t*, void*);
-void td_del_trap_reset (tap_dance_state_t*, void*);
-td_state_t td_get_state (tap_dance_state_t*);
-tap_dance_action_t tap_dance_actions[] = {
-    [BSP_TRAP] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_bsp_trap_finished, td_bsp_trap_reset),
-    [DEL_TRAP] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_del_trap_finished, td_del_trap_reset)
-};
+bool process_trap(keyrecord_t*);
+bool trap_process_key(uint16_t, keyrecord_t*);
 
 enum layers {ALPHA_LAYER, GAME_LAYER, LNMB_LAYER, LMSE_LAYER, NMBR_LAYER, MOUS_LAYER,
              MO_ALP_LYR, MO_MAL_LYR, MO_MNM_LYR, MO_NMB_LYR, MO_MSE_LYR};
@@ -43,7 +30,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_X,    KC_C,    KC_H,    KC_B,    KC_Q,            KC_Z,    KC_Y,    KC_W,    KC_P,    KC_J,
         KC_A,    KC_S,    KC_R,    KC_T,    KC_COMMA,        KC_DOT,  KC_E,    KC_I,    KC_O,    KC_N,
         KC_V,    KC_F,    KC_L,    KC_D,    KC_MINS,         KC_EQL,  KC_U,    KC_M,    KC_G,    KC_K,
-                                  TD(BSP_TRAP), LT(MO_MSE_LYR, KC_SPC),       LT(MO_NMB_LYR, KC_SPC), TD(DEL_TRAP)),
+                                  KC_BSPC, LT(MO_MSE_LYR, KC_SPC),       LT(MO_NMB_LYR, KC_SPC), KC_DEL),
     [GAME_LAYER] = LAYOUT_split_3x5_2( // GAME: Base sans combos and hold-tap features
         _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
         _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,
@@ -98,7 +85,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 enum combos {
   /*   |___|   |XXX|   |XXX|   |___|   |___|      |___|   |___|   |XXX|   |XXX|   |___|   */
-                    SPC_COMBO_L,                               TAB_COMBO_R,
+                    GME_COMBO_L,                               TAB_COMBO_R,
                     SFT_COMBO_L,                               SFT_COMBO_R,
                     CAP_COMBO_L,                               ALP_COMBO_R,
   /*   |XXX|   |___|   |___|   |XXX|   |___|      |___|   |XXX|   |___|   |___|   |XXX|   */
@@ -109,12 +96,12 @@ enum combos {
                     GUI_COMBO_L,                               GUI_COMBO_R,
                     ESC_COMBO_L,                               ENT_COMBO_R,
   /*   |XXX|   |___|   |___|   |___|   |XXX|      |XXX|   |___|   |___|   |___|   |XXX|   */
-                    GME_COMBO_L,
+                    KTP_COMBO_L,                               KTP_COMBO_R,
                     LNM_COMBO_L,                               NMB_COMBO_R,
 };
 
 //                                          L:  -  X  X  -  -
-const uint16_t PROGMEM spc_combo_l[] = {KC_C,   KC_H,     COMBO_END};
+const uint16_t PROGMEM gme_combo_l[] = {KC_C,   KC_H,     COMBO_END};
 const uint16_t PROGMEM sft_combo_l[] = {KC_S,   KC_R,     COMBO_END};
 const uint16_t PROGMEM cap_combo_l[] = {KC_F,   KC_L,     COMBO_END};
 //                                          L:  X  -  -  X  -
@@ -125,7 +112,7 @@ const uint16_t PROGMEM lms_combo_l[] = {KC_V,   KC_D,     COMBO_END};
 const uint16_t PROGMEM gui_combo_l[] = {KC_B,   KC_Q,     COMBO_END};
 const uint16_t PROGMEM esc_combo_l[] = {KC_T,   KC_COMMA, COMBO_END};
 //                                          L:  X  -  -  -  X
-const uint16_t PROGMEM gme_combo_l[] = {KC_X,   KC_Q,     COMBO_END};
+const uint16_t PROGMEM ktp_combo_l[] = {KC_X,   KC_Q,     COMBO_END};
 const uint16_t PROGMEM lnm_combo_l[] = {KC_A,   KC_COMM,  COMBO_END};
 //                                          R:  -  -  X  X  -
 const uint16_t PROGMEM tab_combo_r[] = {KC_W,   KC_P,     COMBO_END};
@@ -139,11 +126,12 @@ const uint16_t PROGMEM mse_combo_r[] = {KC_U,   KC_K,     COMBO_END};
 const uint16_t PROGMEM gui_combo_r[] = {KC_Z,   KC_Y,     COMBO_END};
 const uint16_t PROGMEM ent_combo_r[] = {KC_DOT, KC_E,     COMBO_END};
 //                                          R:  X  -  -  -  X
+const uint16_t PROGMEM ktp_combo_r[] = {KC_Z,   KC_J,     COMBO_END};
 const uint16_t PROGMEM nmb_combo_r[] = {KC_DOT, KC_N,     COMBO_END};
 
 combo_t key_combos[] = {
   /*   |___|   |XXX|   |XXX|   |___|   |___|               |___|   |___|   |XXX|   |XXX|   |___|   */
-  [SPC_COMBO_L] = COMBO(spc_combo_l, KC_SPC),          [TAB_COMBO_R] = COMBO(tab_combo_r, KC_TAB),
+  [GME_COMBO_L] = COMBO(gme_combo_l, TO(GAME_LAYER)),          [TAB_COMBO_R] = COMBO(tab_combo_r, KC_TAB),
   [SFT_COMBO_L] = COMBO(sft_combo_l, KC_LSFT),         [SFT_COMBO_R] = COMBO(sft_combo_r, KC_RSFT),
   [CAP_COMBO_L] = COMBO(cap_combo_l, CAPS_ON),         [ALP_COMBO_R] = COMBO(alp_combo_r, ALPHA_ON_CAPS_OFF),
   /*   |XXX|   |___|   |___|   |XXX|   |___|               |___|   |XXX|   |___|   |___|   |XXX|   */
@@ -154,7 +142,7 @@ combo_t key_combos[] = {
   [GUI_COMBO_L] = COMBO(gui_combo_l, KC_LGUI),         [GUI_COMBO_R] = COMBO(gui_combo_r, KC_RGUI),
   [ESC_COMBO_L] = COMBO(esc_combo_l, KC_ESC),          [ENT_COMBO_R] = COMBO(ent_combo_r, KC_ENT),
   /*   |XXX|   |___|   |___|   |___|   |XXX|               |XXX|   |___|   |___|   |___|   |XXX|   */
-  [GME_COMBO_L] = COMBO(gme_combo_l, TO(GAME_LAYER)),
+  [KTP_COMBO_L] = COMBO(ktp_combo_l, KEY_TRAP),        [KTP_COMBO_R] = COMBO(ktp_combo_r, KEY_TRAP),
   [LNM_COMBO_L] = COMBO(lnm_combo_l, TO(LNMB_LAYER)),  [NMB_COMBO_R] = COMBO(nmb_combo_r, TO(NMBR_LAYER)),
 
 };
@@ -231,72 +219,46 @@ bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
             return false;
     }
 }
-// FUNCTION: TAPDANCE
-// Return tapdance state as an enum value
-td_state_t td_get_state(tap_dance_state_t *state) {
-    if (state->interrupted || !state->pressed)
-        return TAP;
-    else return TRAP;
-}
-void td_del_trap_finished(tap_dance_state_t *state, void *user_data) {
-    td_del_trap_state = td_get_state(state);
-    switch (td_del_trap_state) {
-        case TAP:
-            trap_process_key_down(KC_DEL);
-            register_code(KC_DEL);
-            break;
-        case TRAP:
-            trap.state = HOLD;
-            break;
-        default: break;
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case ALPHA_ON_CAPS_OFF:
+            caps_word_off();
+            layer_move(ALPHA_LAYER);
+            return true;
+
+        case KEY_TRAP:
+            return process_trap(record);
+
+        case KC_A ... KC_RGUI:
+            if (trap.state != CLOSED) return trap_process_key(keycode, record);
+            return true;
+
+        case CAPS_ON:
+            caps_word_on();
+            return false;
+
+        default: return true;
     }
 }
-void td_del_trap_reset(tap_dance_state_t *state, void *user_data) {
-    switch (td_del_trap_state) {
-        case TAP:
-            if (trap_process_key_up(KC_DEL))
-                unregister_code(KC_DEL);
-            break;
-        case TRAP:
-            if (trap.free_key == KC_NO) trap.state = STANDBY;
-            else trap.state = FREE;
-            break;
-        default: break;
-    }
-}
-void td_bsp_trap_finished(tap_dance_state_t *state, void *user_data) {
-    td_bsp_trap_state = td_get_state(state);
-    switch (td_bsp_trap_state) {
-        case TAP:
-            trap_process_key_down(KC_BSPC);
-            register_code(KC_BSPC);
-            break;
-        case TRAP:
-            trap.state = HOLD;
-            break;
-        default: break;
-    }
-}
-void td_bsp_trap_reset(tap_dance_state_t *state, void *user_data) {
-    switch (td_bsp_trap_state) {
-        case TAP:
-            if (trap_process_key_up(KC_BSPC))
-                unregister_code(KC_BSPC);
-            break;
-        case TRAP:
-            if (trap.free_key == KC_NO) trap.state = STANDBY;
-            else trap.state = FREE;
-            break;
-        default: break;
-    }
-}
-void trap_process_key_down(uint16_t keycode) {
-    if (trap.state != FREE)
-        trap.free_key = keycode;
-    if (trap.state == STANDBY)
+// Process KEY_TRAP event
+bool process_trap(keyrecord_t *record) {
+    if (record->event.pressed)
+        trap.state = HOLD;
+    else if (trap.free_key == KC_NO)
+        trap.state = STANDBY;
+    else
         trap.state = FREE;
+    return false;
 }
-bool trap_process_key_up(uint16_t keycode) {
+// Process basic keycode when trap is open
+bool trap_process_key(uint16_t keycode, keyrecord_t *record) {
+    if (record->event.pressed) {
+        if (trap.state != FREE)
+            trap.free_key = keycode;
+        if (trap.state == STANDBY)
+            trap.state = FREE;
+        return true;
+    }
     if (trap.state == HOLD && trap.size < MAX_HOLD) {
         if (keycode == trap.free_key)
             trap.free_key = KC_NO;
@@ -314,27 +276,4 @@ bool trap_process_key_up(uint16_t keycode) {
         trap.state = CLOSED;
     }
     return true;
-}
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    switch (keycode) {
-        case ALPHA_ON_CAPS_OFF:
-            caps_word_off();
-            layer_move(ALPHA_LAYER);
-            return true;
-
-        case KC_A ... KC_RGUI:
-            if (trap.state == CLOSED)
-                return true;
-            if (record->event.pressed) {
-                trap_process_key_down(keycode);
-                return true;
-            }
-            return trap_process_key_up(keycode);
-
-        case CAPS_ON:
-            caps_word_on();
-            return false;
-
-        default: return true;
-    }
 }

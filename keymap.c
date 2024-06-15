@@ -219,6 +219,7 @@ bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
             return false;
     }
 }
+// Handle all the custom keys
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case ALPHA_ON_CAPS_OFF:

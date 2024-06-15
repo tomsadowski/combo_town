@@ -29,7 +29,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [ALPHA_LAYER] = LAYOUT_split_3x5_2( // ALPHA: Alphabet, punctuation, editing
         KC_X,    KC_C,    KC_H,    KC_B,    KC_Q,            KC_Z,    KC_Y,    KC_W,    KC_P,    KC_J,
         KC_A,    KC_S,    KC_R,    KC_T,    KC_COMMA,        KC_DOT,  KC_E,    KC_I,    KC_O,    KC_N,
-        KC_V,    KC_F,    KC_L,    KC_D,    KC_MINS,         KC_EQL,  KC_U,    KC_M,    KC_G,    KC_K,
+        KC_V,    KC_F,    KC_L,    KC_D,    KC_DEL,          KC_BSPC, KC_U,    KC_M,    KC_G,    KC_K,
                                   KC_BSPC, LT(MO_MSE_LYR, KC_SPC),       LT(MO_NMB_LYR, KC_SPC), KC_DEL),
     [GAME_LAYER] = LAYOUT_split_3x5_2( // GAME: Base sans combos and hold-tap features
         _______, _______, _______, _______, _______,         _______, _______, _______, _______, _______,

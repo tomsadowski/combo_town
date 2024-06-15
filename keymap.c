@@ -109,8 +109,8 @@ const uint16_t PROGMEM alt_combo_l[] = {KC_X,   KC_B,     COMBO_END};
 const uint16_t PROGMEM ctl_combo_l[] = {KC_A,   KC_T,     COMBO_END};
 const uint16_t PROGMEM lms_combo_l[] = {KC_V,   KC_D,     COMBO_END};
 //                                          L:  -  -  -  X  X
-const uint16_t PROGMEM gui_combo_l[] = {KC_B,   KC_Q,     COMBO_END};
-const uint16_t PROGMEM esc_combo_l[] = {KC_T,   KC_COMMA, COMBO_END};
+const uint16_t PROGMEM gui_combo_l[] = {KC_T,KC_X,     COMBO_END};
+const uint16_t PROGMEM esc_combo_l[] = {KC_B,   KC_COMMA, COMBO_END};
 //                                          L:  X  -  -  -  X
 const uint16_t PROGMEM ktp_combo_l[] = {KC_X,   KC_Q,     COMBO_END};
 const uint16_t PROGMEM lnm_combo_l[] = {KC_A,   KC_COMM,  COMBO_END};
@@ -123,15 +123,15 @@ const uint16_t PROGMEM alt_combo_r[] = {KC_Y,   KC_J,     COMBO_END};
 const uint16_t PROGMEM ctl_combo_r[] = {KC_E,   KC_N,     COMBO_END};
 const uint16_t PROGMEM mse_combo_r[] = {KC_U,   KC_K,     COMBO_END};
 //                                          R:  X  X  -  -  -
-const uint16_t PROGMEM gui_combo_r[] = {KC_Z,   KC_Y,     COMBO_END};
-const uint16_t PROGMEM ent_combo_r[] = {KC_DOT, KC_E,     COMBO_END};
+const uint16_t PROGMEM gui_combo_r[] = {KC_E, KC_J,     COMBO_END};
+const uint16_t PROGMEM ent_combo_r[] = {KC_DOT, KC_Y,     COMBO_END};
 //                                          R:  X  -  -  -  X
 const uint16_t PROGMEM ktp_combo_r[] = {KC_Z,   KC_J,     COMBO_END};
 const uint16_t PROGMEM nmb_combo_r[] = {KC_DOT, KC_N,     COMBO_END};
 
 combo_t key_combos[] = {
   /*   |___|   |XXX|   |XXX|   |___|   |___|               |___|   |___|   |XXX|   |XXX|   |___|   */
-  [GME_COMBO_L] = COMBO(gme_combo_l, TO(GAME_LAYER)),          [TAB_COMBO_R] = COMBO(tab_combo_r, KC_TAB),
+  [GME_COMBO_L] = COMBO(gme_combo_l, TO(GAME_LAYER)),  [TAB_COMBO_R] = COMBO(tab_combo_r, KC_TAB),
   [SFT_COMBO_L] = COMBO(sft_combo_l, KC_LSFT),         [SFT_COMBO_R] = COMBO(sft_combo_r, KC_RSFT),
   [CAP_COMBO_L] = COMBO(cap_combo_l, CAPS_ON),         [ALP_COMBO_R] = COMBO(alp_combo_r, ALPHA_ON_CAPS_OFF),
   /*   |XXX|   |___|   |___|   |XXX|   |___|               |___|   |XXX|   |___|   |___|   |XXX|   */

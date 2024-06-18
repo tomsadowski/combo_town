@@ -18,10 +18,10 @@ enum my_keycodes {
     ALPHA_ON_CAPS_OFF,
     RELEASE_GATE
 };
-bool press_caps_on();
-bool press_alpha_on_caps_off();
-bool press_release_gate();
-bool release_release_gate();
+bool press_caps_on(void);
+bool press_alpha_on_caps_off(void);
+bool press_release_gate(void);
+bool release_release_gate(void);
 bool press_key_with_release_gate(uint16_t);
 bool release_key_with_release_gate(uint16_t);
 
